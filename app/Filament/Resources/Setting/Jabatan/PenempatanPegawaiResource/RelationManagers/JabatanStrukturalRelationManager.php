@@ -17,7 +17,7 @@ class JabatanStrukturalRelationManager extends RelationManager
 {
     protected static string $relationship = 'jabatanStrukturals';
 
-    protected static ?string $title = 'Histori Jabatan Struktural';
+    protected static ?string $title = 'Jabatan Struktural';
 
     protected static ?string $modelLabel = 'Jabatan Struktural';
 

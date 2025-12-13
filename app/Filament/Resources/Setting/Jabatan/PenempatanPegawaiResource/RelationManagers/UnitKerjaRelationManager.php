@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 class UnitKerjaRelationManager extends RelationManager
 {
     protected static string $relationship = 'unitKerjaHistori';
-    protected static ?string $title = 'Histori Unit Kerja';
+    protected static ?string $title = 'Unit Kerja';
     protected static ?string $modelLabel = 'Unit Kerja';
     protected static ?string $pluralModelLabel = 'Unit Kerja';
 
