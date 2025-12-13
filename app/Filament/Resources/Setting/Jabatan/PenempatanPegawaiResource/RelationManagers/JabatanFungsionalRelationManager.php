@@ -16,82 +16,79 @@ use Illuminate\Support\Facades\DB;
 class JabatanFungsionalRelationManager extends RelationManager
 {
     protected static string $relationship = 'jabatanFungsionals';
-
     protected static ?string $title = 'Jabatan Fungsional';
 
-    protected static ?string $modelLabel = 'Jabatan Fungsional';
-
-    protected static ?string $pluralModelLabel = 'Jabatan Fungsional';
-
+    /* =====================================================
+     * FORM
+     * ===================================================== */
     public function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('jabatan_fungsional_id')
-                    ->label('Jabatan Fungsional')
-                    ->relationship('jabatanFungsional', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->disabled(fn($record) => $record !== null) // Disable jika sudah ada data
-                    ->helperText(
-                        fn($record) =>
-                        $record ? 'Tidak dapat diganti jabatan. Nonaktifkan dulu untuk membuat baru.' : 'Pilih jabatan fungsional'
-                    )
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\Select::make('golongan_min')
-                            ->options($this->getGolonganOptions()),
-                        Forms\Components\Select::make('golongan_max')
-                            ->options($this->getGolonganOptions()),
-                        Forms\Components\TextInput::make('angka_kredit_min')
-                            ->numeric()
-                            ->default(0),
-                        Forms\Components\TextInput::make('angka_kredit_next')
-                            ->numeric()
-                            ->default(0),
-                        Forms\Components\Textarea::make('description'),
-                    ])
-                    ->createOptionUsing(function (array $data) {
-                        $jabfung = JabatanFungsional::create($data);
-                        return $jabfung->id;
-                    }),
+        return $form->schema([
+            Forms\Components\Select::make('jabatan_fungsional_id')
+                ->label('Jabatan Fungsional')
+                ->relationship('jabatanFungsional', 'name')
+                ->searchable()
+                ->preload()
+                ->required()
+                ->disabled(fn($record) => $record !== null)
+                ->helperText(fn($record) => $record ? 'Jabatan tidak dapat diganti' : 'Pilih jabatan fungsional')
+                ->createOptionForm([
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\Select::make('golongan_min')
+                        ->options($this->getGolonganOptions()),
+                    Forms\Components\Select::make('golongan_max')
+                        ->options($this->getGolonganOptions()),
+                    Forms\Components\TextInput::make('angka_kredit_min')
+                        ->numeric()
+                        ->default(0),
+                    Forms\Components\TextInput::make('angka_kredit_next')
+                        ->numeric()
+                        ->default(0),
+                    Forms\Components\Textarea::make('description'),
+                ])
+                ->createOptionUsing(function (array $data) {
+                    $jabfung = JabatanFungsional::create($data);
+                    return $jabfung->id;
+                }),
 
-                Forms\Components\Select::make('unit_kerja_id')
-                    ->label('Unit Kerja')
-                    ->relationship('unitKerja', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->helperText('Unit kerja tempat bertugas'),
+            Forms\Components\Select::make('unit_kerja_id')
+                ->label('Unit Kerja')
+                ->relationship('unitKerja', 'name')
+                ->searchable()
+                ->preload()
+                ->required()
+                ->helperText('Unit kerja tempat bertugas'),
 
-                Forms\Components\DatePicker::make('tmt_mulai')
-                    ->label('TMT Mulai')
-                    ->required()
-                    ->displayFormat('d/m/Y')
-                    ->native(false),
+            Forms\Components\DatePicker::make('tmt_mulai')
+                ->label('TMT Mulai')
+                ->required()
+                ->displayFormat('d/m/Y')
+                ->native(false),
 
-                Forms\Components\DatePicker::make('tmt_selesai')
-                    ->label('TMT Selesai')
-                    ->nullable()
-                    ->displayFormat('d/m/Y')
-                    ->native(false)
-                    ->helperText('Isi untuk menonaktifkan jabatan ini'),
+            Forms\Components\DatePicker::make('tmt_selesai')
+                ->label('TMT Selesai')
+                ->nullable()
+                ->displayFormat('d/m/Y')
+                ->native(false)
+                ->helperText('Kosongkan jika masih aktif'),
 
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ])
-                    ->default('aktif')
-                    ->disabled(fn($record) => $record && $record->status === 'aktif' && is_null($record->tmt_selesai))
-                    ->helperText('Otomatis nonaktif jika TMT selesai diisi'),
-            ]);
+            Forms\Components\Select::make('status')
+                ->label('Status')
+                ->options([
+                    'aktif' => 'Aktif',
+                    'nonaktif' => 'Nonaktif',
+                ])
+                ->default('aktif')
+                ->disabled(fn($record) => $record && $record->status === 'aktif' && is_null($record->tmt_selesai))
+                ->helperText('Otomatis nonaktif jika TMT selesai diisi'),
+        ]);
     }
 
+    /* =====================================================
+     * TABLE
+     * ===================================================== */
     public function table(Table $table): Table
     {
         return $table
@@ -138,33 +135,19 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ->trueColor('success')
                     ->falseColor('danger'),
             ])
-            ->filters([
-                Tables\Filters\Filter::make('masih_aktif')
-                    ->label('Masih aktif')
-                    ->query(fn(Builder $query): Builder => $query->where('status', 'aktif')->whereNull('tmt_selesai')),
 
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ]),
-            ])
+            /* ================= HEADER ACTION ================= */
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Tambah Jabatan Fungsional')
                     ->modalHeading('Tambah Jabatan Fungsional')
-                    ->visible(fn() => !$this->getOwnerRecord()->jabatanFungsionalAktif)
+                    ->hidden(fn() => $this->hasAnyJabatanFungsional())
+                    ->disabled(fn() => $this->hasAnyJabatanFungsional())
                     ->mutateFormDataUsing(function (array $data) {
-                        // Nonaktifkan yang lama jika ada (sebagai backup)
-                        UserJabatanFungsional::where('user_id', $this->getOwnerRecord()->id)
-                            ->where('status', 'aktif')
-                            ->whereNull('tmt_selesai')
-                            ->update([
-                                'tmt_selesai' => $data['tmt_mulai'],
-                                'status' => 'nonaktif'
-                            ]);
-
+                        // Validasi: hanya boleh 1 jabatan fungsional
+                        if ($this->hasAnyJabatanFungsional()) {
+                            throw new \Exception('User sudah memiliki jabatan fungsional');
+                        }
                         return $data;
                     })
                     ->after(function (UserJabatanFungsional $record) {
@@ -174,13 +157,16 @@ class JabatanFungsionalRelationManager extends RelationManager
                         }
                     }),
             ])
+
+            /* ================= ROW ACTION ================= */
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->visible(fn($record) => $record !== null)
+                    ->disabled(fn($record) => $record && $record->status === 'nonaktif')
                     ->mutateFormDataUsing(function (array $data, UserJabatanFungsional $record) {
                         // Update unit kerja jika berubah
                         if ($record->unit_kerja_id != $data['unit_kerja_id']) {
-                            // Hapus unit kerja lama
+                            // Hapus unit kerja lama berdasarkan TMT yang sama
                             UserUnitKerja::where('user_id', $record->user_id)
                                 ->where('unit_kerja_id', $record->unit_kerja_id)
                                 ->where('tmt_mulai', $record->tmt_mulai)
@@ -205,7 +191,6 @@ class JabatanFungsionalRelationManager extends RelationManager
                                     'tmt_selesai' => $data['tmt_selesai'] ?? null,
                                 ]);
                         }
-
                         return $data;
                     }),
 
@@ -215,27 +200,29 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ->color('danger')
                     ->visible(fn($record) => $record && $record->status === 'aktif' && is_null($record->tmt_selesai))
                     ->action(function (UserJabatanFungsional $record) {
-                        $record->update([
-                            'tmt_selesai' => now(),
-                            'status' => 'nonaktif'
-                        ]);
+                        DB::transaction(function () use ($record) {
+                            $record->update([
+                                'tmt_selesai' => now(),
+                                'status' => 'nonaktif'
+                            ]);
 
-                        // Update unit kerja juga
-                        if ($record->unit_kerja_id) {
-                            UserUnitKerja::where('user_id', $record->user_id)
-                                ->where('unit_kerja_id', $record->unit_kerja_id)
-                                ->whereNull('tmt_selesai')
-                                ->update(['tmt_selesai' => now()]);
-                        }
+                            // Nonaktifkan unit kerja yang terkait
+                            if ($record->unit_kerja_id) {
+                                UserUnitKerja::where('user_id', $record->user_id)
+                                    ->where('unit_kerja_id', $record->unit_kerja_id)
+                                    ->whereNull('tmt_selesai')
+                                    ->update(['tmt_selesai' => now()]);
+                            }
+                        });
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Nonaktifkan Jabatan Fungsional')
-                    ->modalDescription('Apakah Anda yakin ingin menonaktifkan jabatan fungsional ini? Setelah dinonaktifkan, Anda bisa menambahkan jabatan fungsional baru.'),
+                    ->modalDescription('Apakah Anda yakin ingin menonaktifkan jabatan fungsional ini?'),
 
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn($record) => $record !== null)
                     ->before(function (UserJabatanFungsional $record) {
-                        // Hapus unit kerja yang terkait
+                        // HAPUS unit kerja yang terkait berdasarkan TMT yang sama
                         if ($record->unit_kerja_id) {
                             UserUnitKerja::where('user_id', $record->user_id)
                                 ->where('unit_kerja_id', $record->unit_kerja_id)
@@ -244,6 +231,7 @@ class JabatanFungsionalRelationManager extends RelationManager
                         }
                     }),
             ])
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
@@ -260,13 +248,53 @@ class JabatanFungsionalRelationManager extends RelationManager
                         }),
                 ]),
             ])
+
+            /* ================= FILTER ================= */
+            ->filters([
+                Tables\Filters\Filter::make('masih_aktif')
+                    ->label('Masih aktif')
+                    ->query(fn(Builder $query): Builder => $query->where('status', 'aktif')->whereNull('tmt_selesai')),
+
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'aktif' => 'Aktif',
+                        'nonaktif' => 'Nonaktif',
+                    ]),
+            ])
+
+            /* ================= EMPTY STATE ================= */
             ->emptyStateHeading('Belum ada jabatan fungsional')
             ->emptyStateDescription('Tambahkan jabatan fungsional untuk pegawai ini.')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Tambah Jabatan Fungsional')
-                    ->visible(fn() => !$this->getOwnerRecord()->jabatanFungsionalAktif),
+                    ->hidden(fn() => $this->hasAnyJabatanFungsional())
+                    ->disabled(fn() => $this->hasAnyJabatanFungsional()),
             ]);
+    }
+
+    /* =====================================================
+     * HELPERS
+     * ===================================================== */
+
+    /**
+     * Cek apakah user sudah memiliki jabatan fungsional (apapun statusnya)
+     */
+    private function hasAnyJabatanFungsional(): bool
+    {
+        return UserJabatanFungsional::where('user_id', $this->getOwnerRecord()->id)->exists();
+    }
+
+    /**
+     * Cek apakah user sudah memiliki jabatan fungsional aktif
+     */
+    private function hasActiveJabatanFungsional(): bool
+    {
+        return UserJabatanFungsional::where('user_id', $this->getOwnerRecord()->id)
+            ->where('status', 'aktif')
+            ->whereNull('tmt_selesai')
+            ->exists();
     }
 
     /**
