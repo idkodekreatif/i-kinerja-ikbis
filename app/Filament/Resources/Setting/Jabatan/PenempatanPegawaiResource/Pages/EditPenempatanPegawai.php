@@ -15,8 +15,8 @@ class EditPenempatanPegawai extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
-                ->color('danger'),
+            // Hapus atau comment Actions\DeleteAction::make()
+            // Actions\DeleteAction::make(),
         ];
     }
 
