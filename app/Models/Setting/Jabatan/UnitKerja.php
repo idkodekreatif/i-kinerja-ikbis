@@ -42,4 +42,9 @@ class UnitKerja extends Model
         }
         return $this->name;
     }
+
+    public function jabatanStruktural()
+    {
+        return $this->hasMany(JabatanStruktural::class);
+    }
 }
