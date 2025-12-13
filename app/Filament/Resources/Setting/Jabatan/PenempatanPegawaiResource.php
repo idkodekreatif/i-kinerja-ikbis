@@ -37,7 +37,8 @@ class PenempatanPegawaiResource extends Resource
                             ->label('Email')
                             ->disabled()
                             ->dehydrated(false),
-                    ]),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -118,6 +119,11 @@ class PenempatanPegawaiResource extends Resource
     }
 
     public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
     {
         return false;
     }
