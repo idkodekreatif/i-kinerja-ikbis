@@ -52,45 +52,40 @@ class User extends Authenticatable
 
     public function jabatanFungsionals()
     {
-        return $this->hasMany(UserJabatanFungsional::class, 'user_id');
+        return $this->hasMany(\App\Models\Setting\Jabatan\UserJabatanFungsional::class);
+    }
+
+    public function jabatanFungsionalAktif()
+    {
+        return $this->hasOne(\App\Models\Setting\Jabatan\UserJabatanFungsional::class)
+            ->where('status', 'aktif')
+            ->whereNull('tmt_selesai')
+            ->latest('tmt_mulai');
     }
 
     public function jabatanStrukturals()
     {
-        return $this->hasMany(UserJabatanStruktural::class, 'user_id');
+        return $this->hasMany(\App\Models\Setting\Jabatan\UserJabatanStruktural::class);
+    }
+
+    public function jabatanStrukturalAktif()
+    {
+        return $this->hasOne(\App\Models\Setting\Jabatan\UserJabatanStruktural::class)
+            ->where('status', 'aktif')
+            ->whereNull('tmt_selesai')
+            ->latest('tmt_mulai');
     }
 
     public function unitKerjaHistori()
     {
-        return $this->hasMany(UserUnitKerja::class, 'user_id');
+        return $this->hasMany(\App\Models\Setting\Jabatan\UserUnitKerja::class)
+            ->orderBy('tmt_mulai', 'desc');
     }
 
-    // Accessor untuk jabatan fungsional aktif
-    public function getJabatanFungsionalAktifAttribute()
+    public function unitKerjaAktif()
     {
-        return $this->jabatanFungsionals()
-            ->where('status', 'aktif')
+        return $this->hasOne(\App\Models\Setting\Jabatan\UserUnitKerja::class)
             ->whereNull('tmt_selesai')
-            ->orderBy('tmt_mulai', 'desc')
-            ->first();
-    }
-
-    // Accessor untuk jabatan struktural aktif
-    public function getJabatanStrukturalAktifAttribute()
-    {
-        return $this->jabatanStrukturals()
-            ->where('status', 'aktif')
-            ->whereNull('tmt_selesai')
-            ->orderBy('tmt_mulai', 'desc')
-            ->first();
-    }
-
-    // Accessor untuk unit kerja aktif
-    public function getUnitKerjaAktifAttribute()
-    {
-        return $this->unitKerjaHistori()
-            ->whereNull('tmt_selesai')
-            ->orderBy('tmt_mulai', 'desc')
-            ->first();
+            ->latest('tmt_mulai');
     }
 }

@@ -23,12 +23,10 @@ return new class extends Migration
 
             $table->date('tmt_mulai');
             $table->date('tmt_selesai')->nullable();
-            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
+
+            $table->string('status', 20)->default('aktif')->comment('aktif, nonaktif, system');
 
             $table->timestamps();
-
-            //  boleh unit kerja sama, asal periode beda
-            $table->unique(['user_id', 'unit_kerja_id', 'tmt_mulai']);
         });
     }
 

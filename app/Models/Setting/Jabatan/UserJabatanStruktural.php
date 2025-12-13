@@ -17,7 +17,7 @@ class UserJabatanStruktural extends Model
         'jabatan_struktural_id',
         'tmt_mulai',
         'tmt_selesai',
-        'status'
+        'status',
     ];
 
     protected $casts = [
@@ -27,16 +27,11 @@ class UserJabatanStruktural extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\User::class);
     }
 
     public function jabatanStruktural()
     {
         return $this->belongsTo(JabatanStruktural::class);
-    }
-
-    public function scopeAktif($query)
-    {
-        return $query->where('status', 'aktif')->whereNull('tmt_selesai');
     }
 }

@@ -2,15 +2,12 @@
 
 namespace App\Filament\Resources\Setting\Jabatan\PenempatanPegawaiResource\RelationManagers;
 
-use App\Models\Setting\Jabatan\UnitKerja;
 use App\Models\Setting\Jabatan\UserUnitKerja;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class UnitKerjaRelationManager extends RelationManager
 {
@@ -24,49 +21,8 @@ class UnitKerjaRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('unit_kerja_id')
-                    ->label('Unit Kerja')
-                    ->relationship('unitKerja', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nama Unit Kerja')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\Select::make('type')
-                            ->label('Tipe')
-                            ->options(['Akademik' => 'Akademik', 'Non-akademik' => 'Non-akademik']),
-                    ])
-                    ->createOptionUsing(function (array $data) {
-                        $unitKerja = UnitKerja::create($data);
-                        return $unitKerja->id;
-                    }),
-
-                Forms\Components\DatePicker::make('tmt_mulai')
-                    ->label('TMT Mulai')
-                    ->required()
-                    ->displayFormat('d/m/Y')
-                    ->native(false),
-
-                Forms\Components\DatePicker::make('tmt_selesai')
-                    ->label('TMT Selesai')
-                    ->nullable()
-                    ->displayFormat('d/m/Y')
-                    ->native(false)
-                    ->helperText('Kosongkan jika masih aktif'),
-
-                Forms\Components\Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ])
-                    ->default('aktif'),
-            ]);
+        // Form tidak diperlukan karena hanya view
+        return $form->schema([]);
     }
 
     public function table(Table $table): Table
@@ -98,8 +54,33 @@ class UnitKerjaRelationManager extends RelationManager
                         'danger' => 'nonaktif',
                     ]),
 
+                Tables\Columns\TextColumn::make('sumber_info')
+                    ->label('SUMBER')
+                    ->getStateUsing(function (UserUnitKerja $record): string {
+                        $userId = $record->user_id;
+                        $unitId = $record->unit_kerja_id;
+                        $tmt = $record->tmt_mulai;
+
+                        // Cek dari jabatan struktural
+                        $fromJabstruk = \App\Models\Setting\Jabatan\UserJabatanStruktural::where('user_id', $userId)
+                            ->whereHas('jabatanStruktural', function ($query) use ($unitId) {
+                                $query->where('unit_kerja_id', $unitId);
+                            })
+                            ->where('tmt_mulai', $tmt)
+                            ->exists();
+
+                        if ($fromJabstruk) return 'Jabatan Struktural';
+
+                        return 'Manual';
+                    })
+                    ->badge()
+                    ->colors([
+                        'warning' => 'Jabatan Struktural',
+                        'gray' => 'Manual',
+                    ]),
+
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('AKTIF')
+                    ->label('AKTIF SEKARANG')
                     ->boolean()
                     ->getStateUsing(fn(UserUnitKerja $record): bool => is_null($record->tmt_selesai))
                     ->trueIcon('heroicon-o-check-circle')
@@ -111,69 +92,11 @@ class UnitKerjaRelationManager extends RelationManager
                 Tables\Filters\Filter::make('masih_aktif')
                     ->label('Masih aktif')
                     ->query(fn(Builder $query): Builder => $query->whereNull('tmt_selesai')),
-
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'nonaktif' => 'Nonaktif',
-                    ]),
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->label('Tambah Unit Kerja')
-                    ->modalHeading('Tambah Unit Kerja')
-                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
-                        // Nonaktifkan unit kerja aktif sebelumnya
-                        UserUnitKerja::where('user_id', $livewire->ownerRecord->id)
-                            ->whereNull('tmt_selesai')
-                            ->update(['tmt_selesai' => $data['tmt_mulai']]);
-
-                        return $data;
-                    }),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->mutateFormDataUsing(function (array $data, UserUnitKerja $record): array {
-                        // Jika TMT mulai diubah, update TMT selesai dari record sebelumnya
-                        if ($record->tmt_mulai->format('Y-m-d') !== $data['tmt_mulai']) {
-                            $prevRecord = UserUnitKerja::where('user_id', $record->user_id)
-                                ->where('id', '<', $record->id)
-                                ->orderBy('id', 'desc')
-                                ->first();
-
-                            if ($prevRecord && is_null($prevRecord->tmt_selesai)) {
-                                $prevRecord->update(['tmt_selesai' => $data['tmt_mulai']]);
-                            }
-                        }
-
-                        return $data;
-                    }),
-
-                Tables\Actions\DeleteAction::make()
-                    ->before(function (UserUnitKerja $record, Tables\Actions\DeleteAction $action) {
-                        // Cek apakah ini record terakhir
-                        $isLast = !UserUnitKerja::where('user_id', $record->user_id)
-                            ->where('id', '>', $record->id)
-                            ->exists();
-
-                        if ($isLast && is_null($record->tmt_selesai)) {
-                            // Aktifkan record sebelumnya jika ada
-                            $prevRecord = UserUnitKerja::where('user_id', $record->user_id)
-                                ->where('id', '<', $record->id)
-                                ->orderBy('id', 'desc')
-                                ->first();
-
-                            if ($prevRecord) {
-                                $prevRecord->update(['tmt_selesai' => null]);
-                            }
-                        }
-                    }),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->headerActions([]) // Tidak bisa tambah manual
+            ->actions([]) // Tidak bisa edit/delete
+            ->bulkActions([])
+            ->emptyStateHeading('Belum ada riwayat unit kerja')
+            ->emptyStateDescription('Unit kerja akan otomatis terisi ketika menambahkan jabatan struktural.');
     }
 }

@@ -18,7 +18,7 @@ class UserJabatanFungsional extends Model
         'unit_kerja_id',
         'tmt_mulai',
         'tmt_selesai',
-        'status'
+        'status',
     ];
 
     protected $casts = [
@@ -28,7 +28,7 @@ class UserJabatanFungsional extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\User::class);
     }
 
     public function jabatanFungsional()
@@ -39,10 +39,5 @@ class UserJabatanFungsional extends Model
     public function unitKerja()
     {
         return $this->belongsTo(UnitKerja::class);
-    }
-
-    public function scopeAktif($query)
-    {
-        return $query->where('status', 'aktif')->whereNull('tmt_selesai');
     }
 }

@@ -30,12 +30,6 @@ return new class extends Migration
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
 
             $table->timestamps();
-
-            // BUKAN unik permanen, tapi historis
-            $table->unique(
-                ['user_id', 'jabatan_fungsional_id', 'tmt_mulai'],
-                'uniq_user_jabfung_tmt'
-            );
         });
     }
 

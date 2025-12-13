@@ -37,8 +37,15 @@ class JabatanFungsionalRelationManager extends RelationManager
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\Select::make('golongan_min')
-                            ->options($this->getGolonganOptions()),
+                        Forms\Components\TextInput::make('golongan_min'),
+                        Forms\Components\TextInput::make('golongan_max'),
+                        Forms\Components\TextInput::make('angka_kredit_min')
+                            ->numeric()
+                            ->default(0),
+                        Forms\Components\TextInput::make('angka_kredit_next')
+                            ->numeric()
+                            ->default(0),
+                        Forms\Components\Textarea::make('description'),
                     ])
                     ->createOptionUsing(function (array $data) {
                         $jabfung = JabatanFungsional::create($data);
@@ -113,7 +120,7 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ]),
 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('AKTIF')
+                    ->label('AKTIF SEKARANG')
                     ->boolean()
                     ->getStateUsing(function (UserJabatanFungsional $record): bool {
                         return $record->status === 'aktif' && is_null($record->tmt_selesai);
@@ -139,20 +146,17 @@ class JabatanFungsionalRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()
                     ->label('Tambah Jabatan Fungsional')
                     ->modalHeading('Tambah Jabatan Fungsional')
-                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
-                        // Nonaktifkan jabatan fungsional aktif sebelumnya
-                        UserJabatanFungsional::where('user_id', $livewire->ownerRecord->id)
-                            ->where('status', 'aktif')
-                            ->whereNull('tmt_selesai')
-                            ->update([
-                                'tmt_selesai' => $data['tmt_mulai'],
-                                'status' => 'nonaktif'
-                            ]);
+                    ->mutateFormDataUsing(function (array $data) {
+                        // Jika unit_kerja_id tidak diberikan, ambil default dari jabatan_fungsional
+                        if (empty($data['unit_kerja_id'])) {
+                            $jf = JabatanFungsional::find($data['jabatan_fungsional_id']);
+                            $data['unit_kerja_id'] = $jf?->unit_kerja_id ?? null;
+                        }
 
                         return $data;
                     })
                     ->after(function (UserJabatanFungsional $record) {
-                        // Jika ada unit kerja, sinkronkan ke user_unit_kerja
+                        // Sinkron unit kerja
                         if ($record->unit_kerja_id) {
                             $this->syncUnitKerja($record);
                         }
@@ -160,13 +164,19 @@ class JabatanFungsionalRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->mutateFormDataUsing(function (array $data, UserJabatanFungsional $record): array {
-                        // Update unit kerja jika ada perubahan
+                    ->mutateFormDataUsing(function (array $data, UserJabatanFungsional $record) {
+                        // Jika unit_kerja_id tidak diberikan, ambil default dari jabatan_fungsional
+                        if (empty($data['unit_kerja_id'])) {
+                            $jf = JabatanFungsional::find($data['jabatan_fungsional_id']);
+                            $data['unit_kerja_id'] = $jf?->unit_kerja_id ?? null;
+                        }
+
+                        // Update unit kerja
                         $oldUnitId = $record->unit_kerja_id;
-                        $newUnitId = $data['unit_kerja_id'] ?? null;
+                        $newUnitId = $data['unit_kerja_id'];
 
                         if ($oldUnitId != $newUnitId) {
-                            // Hapus unit kerja lama berdasarkan TMT
+                            // Hapus unit kerja lama
                             UserUnitKerja::where('user_id', $record->user_id)
                                 ->where('unit_kerja_id', $oldUnitId)
                                 ->where('tmt_mulai', $record->tmt_mulai)
@@ -174,13 +184,7 @@ class JabatanFungsionalRelationManager extends RelationManager
 
                             // Buat unit kerja baru
                             if ($newUnitId) {
-                                UserUnitKerja::create([
-                                    'user_id' => $record->user_id,
-                                    'unit_kerja_id' => $newUnitId,
-                                    'tmt_mulai' => $data['tmt_mulai'],
-                                    'tmt_selesai' => $data['tmt_selesai'] ?? null,
-                                    'status' => $data['status'] ?? 'aktif',
-                                ]);
+                                $this->syncUnitKerja($record, $data);
                             }
                         }
 
@@ -205,45 +209,29 @@ class JabatanFungsionalRelationManager extends RelationManager
             ]);
     }
 
-    private function getGolonganOptions(): array
+    private function syncUnitKerja(UserJabatanFungsional $record, ?array $newData = null): void
     {
-        return [
-            'I/a' => 'I/a',
-            'I/b' => 'I/b',
-            'I/c' => 'I/c',
-            'I/d' => 'I/d',
-            'II/a' => 'II/a',
-            'II/b' => 'II/b',
-            'II/c' => 'II/c',
-            'II/d' => 'II/d',
-            'III/a' => 'III/a',
-            'III/b' => 'III/b',
-            'III/c' => 'III/c',
-            'III/d' => 'III/d',
-            'IV/a' => 'IV/a',
-            'IV/b' => 'IV/b',
-            'IV/c' => 'IV/c',
-            'IV/d' => 'IV/d',
-            'IV/e' => 'IV/e',
-        ];
-    }
+        DB::transaction(function () use ($record, $newData) {
+            $userId = $record->user_id;
+            $unitId = $newData['unit_kerja_id'] ?? $record->unit_kerja_id;
+            $tmtMulai = $newData['tmt_mulai'] ?? $record->tmt_mulai;
+            $tmtSelesai = $newData['tmt_selesai'] ?? $record->tmt_selesai;
 
-    private function syncUnitKerja(UserJabatanFungsional $record): void
-    {
-        DB::transaction(function () use ($record) {
-            // Nonaktifkan unit kerja aktif sebelumnya
-            UserUnitKerja::where('user_id', $record->user_id)
-                ->whereNull('tmt_selesai')
-                ->update(['tmt_selesai' => $record->tmt_mulai]);
+            if ($unitId) {
+                // Tutup semua unit aktif sebelumnya
+                UserUnitKerja::where('user_id', $userId)
+                    ->whereNull('tmt_selesai')
+                    ->update(['tmt_selesai' => $tmtMulai]);
 
-            // Buat unit kerja baru
-            UserUnitKerja::create([
-                'user_id' => $record->user_id,
-                'unit_kerja_id' => $record->unit_kerja_id,
-                'tmt_mulai' => $record->tmt_mulai,
-                'tmt_selesai' => $record->tmt_selesai,
-                'status' => $record->status, // Gunakan status dari jabfung
-            ]);
+                // Buat record unit baru
+                UserUnitKerja::create([
+                    'user_id' => $userId,
+                    'unit_kerja_id' => $unitId,
+                    'tmt_mulai' => $tmtMulai,
+                    'tmt_selesai' => $tmtSelesai,
+                    'status' => 'jabfung',
+                ]);
+            }
         });
     }
 }
