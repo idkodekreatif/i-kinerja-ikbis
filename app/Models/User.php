@@ -50,19 +50,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function jabatanFungsionals()
-    {
-        return $this->hasMany(\App\Models\Setting\Jabatan\UserJabatanFungsional::class);
-    }
-
-    public function jabatanFungsionalAktif()
-    {
-        return $this->hasOne(\App\Models\Setting\Jabatan\UserJabatanFungsional::class)
-            ->where('status', 'aktif')
-            ->whereNull('tmt_selesai')
-            ->latest('tmt_mulai');
-    }
-
     public function jabatanStrukturals()
     {
         return $this->hasMany(\App\Models\Setting\Jabatan\UserJabatanStruktural::class);
@@ -76,6 +63,7 @@ class User extends Authenticatable
             ->latest('tmt_mulai');
     }
 
+    // Aktif digunakan
     public function unitKerjaHistori()
     {
         return $this->hasMany(\App\Models\Setting\Jabatan\UserUnitKerja::class)
@@ -85,6 +73,19 @@ class User extends Authenticatable
     public function unitKerjaAktif()
     {
         return $this->hasOne(\App\Models\Setting\Jabatan\UserUnitKerja::class)
+            ->whereNull('tmt_selesai')
+            ->latest('tmt_mulai');
+    }
+
+    public function jabatanFungsionals()
+    {
+        return $this->hasMany(\App\Models\Setting\Jabatan\UserJabatanFungsional::class);
+    }
+
+    public function jabatanFungsionalAktif()
+    {
+        return $this->hasOne(\App\Models\Setting\Jabatan\UserJabatanFungsional::class)
+            ->where('status', 'aktif')
             ->whereNull('tmt_selesai')
             ->latest('tmt_mulai');
     }

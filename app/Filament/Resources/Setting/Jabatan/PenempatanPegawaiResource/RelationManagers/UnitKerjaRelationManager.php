@@ -12,16 +12,12 @@ use Illuminate\Database\Eloquent\Builder;
 class UnitKerjaRelationManager extends RelationManager
 {
     protected static string $relationship = 'unitKerjaHistori';
-
     protected static ?string $title = 'Histori Unit Kerja';
-
     protected static ?string $modelLabel = 'Unit Kerja';
-
     protected static ?string $pluralModelLabel = 'Unit Kerja';
 
     public function form(Form $form): Form
     {
-        // Form tidak diperlukan karena hanya view
         return $form->schema([]);
     }
 
@@ -61,6 +57,14 @@ class UnitKerjaRelationManager extends RelationManager
                         $unitId = $record->unit_kerja_id;
                         $tmt = $record->tmt_mulai;
 
+                        // Cek dari jabatan fungsional
+                        $fromJabfung = \App\Models\Setting\Jabatan\UserJabatanFungsional::where('user_id', $userId)
+                            ->where('unit_kerja_id', $unitId)
+                            ->where('tmt_mulai', $tmt)
+                            ->exists();
+
+                        if ($fromJabfung) return 'Jabatan Fungsional';
+
                         // Cek dari jabatan struktural
                         $fromJabstruk = \App\Models\Setting\Jabatan\UserJabatanStruktural::where('user_id', $userId)
                             ->whereHas('jabatanStruktural', function ($query) use ($unitId) {
@@ -75,6 +79,7 @@ class UnitKerjaRelationManager extends RelationManager
                     })
                     ->badge()
                     ->colors([
+                        'info' => 'Jabatan Fungsional',
                         'warning' => 'Jabatan Struktural',
                         'gray' => 'Manual',
                     ]),
@@ -93,10 +98,10 @@ class UnitKerjaRelationManager extends RelationManager
                     ->label('Masih aktif')
                     ->query(fn(Builder $query): Builder => $query->whereNull('tmt_selesai')),
             ])
-            ->headerActions([]) // Tidak bisa tambah manual
-            ->actions([]) // Tidak bisa edit/delete
+            ->headerActions([])
+            ->actions([])
             ->bulkActions([])
             ->emptyStateHeading('Belum ada riwayat unit kerja')
-            ->emptyStateDescription('Unit kerja akan otomatis terisi ketika menambahkan jabatan struktural.');
+            ->emptyStateDescription('Unit kerja akan otomatis terisi ketika menambahkan jabatan fungsional atau struktural.');
     }
 }

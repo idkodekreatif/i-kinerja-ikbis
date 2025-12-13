@@ -17,7 +17,7 @@ class JabatanFungsionalRelationManager extends RelationManager
 {
     protected static string $relationship = 'jabatanFungsionals';
 
-    protected static ?string $title = 'Histori Jabatan Fungsional';
+    protected static ?string $title = 'Jabatan Fungsional';
 
     protected static ?string $modelLabel = 'Jabatan Fungsional';
 
@@ -33,12 +33,19 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ->searchable()
                     ->preload()
                     ->required()
+                    ->disabled(fn($record) => $record !== null) // Disable jika sudah ada data
+                    ->helperText(
+                        fn($record) =>
+                        $record ? 'Tidak dapat diganti jabatan. Nonaktifkan dulu untuk membuat baru.' : 'Pilih jabatan fungsional'
+                    )
                     ->createOptionForm([
                         Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('golongan_min'),
-                        Forms\Components\TextInput::make('golongan_max'),
+                        Forms\Components\Select::make('golongan_min')
+                            ->options($this->getGolonganOptions()),
+                        Forms\Components\Select::make('golongan_max')
+                            ->options($this->getGolonganOptions()),
                         Forms\Components\TextInput::make('angka_kredit_min')
                             ->numeric()
                             ->default(0),
@@ -57,7 +64,7 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ->relationship('unitKerja', 'name')
                     ->searchable()
                     ->preload()
-                    ->nullable()
+                    ->required()
                     ->helperText('Unit kerja tempat bertugas'),
 
                 Forms\Components\DatePicker::make('tmt_mulai')
@@ -71,7 +78,7 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ->nullable()
                     ->displayFormat('d/m/Y')
                     ->native(false)
-                    ->helperText('Kosongkan jika masih aktif'),
+                    ->helperText('Isi untuk menonaktifkan jabatan ini'),
 
                 Forms\Components\Select::make('status')
                     ->label('Status')
@@ -79,7 +86,9 @@ class JabatanFungsionalRelationManager extends RelationManager
                         'aktif' => 'Aktif',
                         'nonaktif' => 'Nonaktif',
                     ])
-                    ->default('aktif'),
+                    ->default('aktif')
+                    ->disabled(fn($record) => $record && $record->status === 'aktif' && is_null($record->tmt_selesai))
+                    ->helperText('Otomatis nonaktif jika TMT selesai diisi'),
             ]);
     }
 
@@ -98,8 +107,7 @@ class JabatanFungsionalRelationManager extends RelationManager
                     ->label('UNIT KERJA')
                     ->searchable()
                     ->sortable()
-                    ->color('success')
-                    ->placeholder('-'),
+                    ->color('success'),
 
                 Tables\Columns\TextColumn::make('tmt_mulai')
                     ->label('TMT MULAI')
@@ -146,12 +154,16 @@ class JabatanFungsionalRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()
                     ->label('Tambah Jabatan Fungsional')
                     ->modalHeading('Tambah Jabatan Fungsional')
+                    ->visible(fn() => !$this->getOwnerRecord()->jabatanFungsionalAktif)
                     ->mutateFormDataUsing(function (array $data) {
-                        // Jika unit_kerja_id tidak diberikan, ambil default dari jabatan_fungsional
-                        if (empty($data['unit_kerja_id'])) {
-                            $jf = JabatanFungsional::find($data['jabatan_fungsional_id']);
-                            $data['unit_kerja_id'] = $jf?->unit_kerja_id ?? null;
-                        }
+                        // Nonaktifkan yang lama jika ada (sebagai backup)
+                        UserJabatanFungsional::where('user_id', $this->getOwnerRecord()->id)
+                            ->where('status', 'aktif')
+                            ->whereNull('tmt_selesai')
+                            ->update([
+                                'tmt_selesai' => $data['tmt_mulai'],
+                                'status' => 'nonaktif'
+                            ]);
 
                         return $data;
                     })
@@ -164,35 +176,65 @@ class JabatanFungsionalRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
+                    ->visible(fn($record) => $record !== null)
                     ->mutateFormDataUsing(function (array $data, UserJabatanFungsional $record) {
-                        // Jika unit_kerja_id tidak diberikan, ambil default dari jabatan_fungsional
-                        if (empty($data['unit_kerja_id'])) {
-                            $jf = JabatanFungsional::find($data['jabatan_fungsional_id']);
-                            $data['unit_kerja_id'] = $jf?->unit_kerja_id ?? null;
-                        }
-
-                        // Update unit kerja
-                        $oldUnitId = $record->unit_kerja_id;
-                        $newUnitId = $data['unit_kerja_id'];
-
-                        if ($oldUnitId != $newUnitId) {
+                        // Update unit kerja jika berubah
+                        if ($record->unit_kerja_id != $data['unit_kerja_id']) {
                             // Hapus unit kerja lama
                             UserUnitKerja::where('user_id', $record->user_id)
-                                ->where('unit_kerja_id', $oldUnitId)
+                                ->where('unit_kerja_id', $record->unit_kerja_id)
                                 ->where('tmt_mulai', $record->tmt_mulai)
                                 ->delete();
 
                             // Buat unit kerja baru
-                            if ($newUnitId) {
+                            if ($data['unit_kerja_id']) {
                                 $this->syncUnitKerja($record, $data);
                             }
+                        }
+                        // Jika hanya TMT atau status yang berubah
+                        else if (
+                            $record->tmt_mulai->format('Y-m-d') != $data['tmt_mulai'] ||
+                            $record->tmt_selesai != $data['tmt_selesai']
+                        ) {
+                            // Update unit kerja yang terkait
+                            UserUnitKerja::where('user_id', $record->user_id)
+                                ->where('unit_kerja_id', $record->unit_kerja_id)
+                                ->where('tmt_mulai', $record->tmt_mulai)
+                                ->update([
+                                    'tmt_mulai' => $data['tmt_mulai'],
+                                    'tmt_selesai' => $data['tmt_selesai'] ?? null,
+                                ]);
                         }
 
                         return $data;
                     }),
 
+                Tables\Actions\Action::make('nonaktifkan')
+                    ->label('Nonaktifkan')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn($record) => $record && $record->status === 'aktif' && is_null($record->tmt_selesai))
+                    ->action(function (UserJabatanFungsional $record) {
+                        $record->update([
+                            'tmt_selesai' => now(),
+                            'status' => 'nonaktif'
+                        ]);
+
+                        // Update unit kerja juga
+                        if ($record->unit_kerja_id) {
+                            UserUnitKerja::where('user_id', $record->user_id)
+                                ->where('unit_kerja_id', $record->unit_kerja_id)
+                                ->whereNull('tmt_selesai')
+                                ->update(['tmt_selesai' => now()]);
+                        }
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Nonaktifkan Jabatan Fungsional')
+                    ->modalDescription('Apakah Anda yakin ingin menonaktifkan jabatan fungsional ini? Setelah dinonaktifkan, Anda bisa menambahkan jabatan fungsional baru.'),
+
                 Tables\Actions\DeleteAction::make()
-                    ->before(function (UserJabatanFungsional $record, Tables\Actions\DeleteAction $action) {
+                    ->visible(fn($record) => $record !== null)
+                    ->before(function (UserJabatanFungsional $record) {
                         // Hapus unit kerja yang terkait
                         if ($record->unit_kerja_id) {
                             UserUnitKerja::where('user_id', $record->user_id)
@@ -204,11 +246,32 @@ class JabatanFungsionalRelationManager extends RelationManager
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function ($records) {
+                            foreach ($records as $record) {
+                                // Hapus unit kerja yang terkait untuk setiap record
+                                if ($record->unit_kerja_id) {
+                                    UserUnitKerja::where('user_id', $record->user_id)
+                                        ->where('unit_kerja_id', $record->unit_kerja_id)
+                                        ->where('tmt_mulai', $record->tmt_mulai)
+                                        ->delete();
+                                }
+                            }
+                        }),
                 ]),
+            ])
+            ->emptyStateHeading('Belum ada jabatan fungsional')
+            ->emptyStateDescription('Tambahkan jabatan fungsional untuk pegawai ini.')
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('Tambah Jabatan Fungsional')
+                    ->visible(fn() => !$this->getOwnerRecord()->jabatanFungsionalAktif),
             ]);
     }
 
+    /**
+     * Sync unit kerja ke tabel user_unit_kerja
+     */
     private function syncUnitKerja(UserJabatanFungsional $record, ?array $newData = null): void
     {
         DB::transaction(function () use ($record, $newData) {
@@ -218,20 +281,43 @@ class JabatanFungsionalRelationManager extends RelationManager
             $tmtSelesai = $newData['tmt_selesai'] ?? $record->tmt_selesai;
 
             if ($unitId) {
-                // Tutup semua unit aktif sebelumnya
+                // Nonaktifkan unit kerja aktif sebelumnya
                 UserUnitKerja::where('user_id', $userId)
                     ->whereNull('tmt_selesai')
                     ->update(['tmt_selesai' => $tmtMulai]);
 
-                // Buat record unit baru
+                // Buat record unit kerja baru
                 UserUnitKerja::create([
                     'user_id' => $userId,
                     'unit_kerja_id' => $unitId,
                     'tmt_mulai' => $tmtMulai,
                     'tmt_selesai' => $tmtSelesai,
-                    'status' => 'jabfung',
+                    'status' => 'aktif',
                 ]);
             }
         });
+    }
+
+    private function getGolonganOptions(): array
+    {
+        return [
+            'I/a' => 'I/a',
+            'I/b' => 'I/b',
+            'I/c' => 'I/c',
+            'I/d' => 'I/d',
+            'II/a' => 'II/a',
+            'II/b' => 'II/b',
+            'II/c' => 'II/c',
+            'II/d' => 'II/d',
+            'III/a' => 'III/a',
+            'III/b' => 'III/b',
+            'III/c' => 'III/c',
+            'III/d' => 'III/d',
+            'IV/a' => 'IV/a',
+            'IV/b' => 'IV/b',
+            'IV/c' => 'IV/c',
+            'IV/d' => 'IV/d',
+            'IV/e' => 'IV/e',
+        ];
     }
 }

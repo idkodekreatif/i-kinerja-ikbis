@@ -30,6 +30,10 @@ return new class extends Migration
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
 
             $table->timestamps();
+
+            $table->unique(['user_id'], 'user_jabfung_active_unique')
+                ->where('status', 'aktif')
+                ->whereNull('tmt_selesai');
         });
     }
 
