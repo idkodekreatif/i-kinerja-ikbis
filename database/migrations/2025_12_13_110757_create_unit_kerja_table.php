@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('unit_kerja', function (Blueprint $table) {
             $table->id();
-             $table->string('name')->unique(); // IT, HRD, Keuangan
+            $table->string('name')->unique(); // IT, HRD, Keuangan
             $table->string('type')->nullable(); // Akademik / Non-akademik
             $table->text('description')->nullable();
             $table->timestamps();
-
-            $table->softDeletes();
         });
     }
 
