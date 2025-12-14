@@ -124,16 +124,16 @@ class JabatanFungsionalRelationManager extends RelationManager
                         'danger' => 'nonaktif',
                     ]),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('AKTIF SEKARANG')
-                    ->boolean()
-                    ->getStateUsing(function (UserJabatanFungsional $record): bool {
-                        return $record->status === 'aktif' && is_null($record->tmt_selesai);
-                    })
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
+                // Tables\Columns\IconColumn::make('is_active')
+                //     ->label('AKTIF SEKARANG')
+                //     ->boolean()
+                //     ->getStateUsing(function (UserJabatanFungsional $record): bool {
+                //         return $record->status === 'aktif' && is_null($record->tmt_selesai);
+                //     })
+                //     ->trueIcon('heroicon-o-check-circle')
+                //     ->falseIcon('heroicon-o-x-circle')
+                //     ->trueColor('success')
+                //     ->falseColor('danger'),
             ])
 
             /* ================= HEADER ACTION ================= */

@@ -84,14 +84,14 @@ class UnitKerjaRelationManager extends RelationManager
                         'gray' => 'Manual',
                     ]),
 
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('AKTIF SEKARANG')
-                    ->boolean()
-                    ->getStateUsing(fn(UserUnitKerja $record): bool => is_null($record->tmt_selesai))
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
+                // Tables\Columns\IconColumn::make('is_active')
+                //     ->label('AKTIF SEKARANG')
+                //     ->boolean()
+                //     ->getStateUsing(fn(UserUnitKerja $record): bool => is_null($record->tmt_selesai))
+                //     ->trueIcon('heroicon-o-check-circle')
+                //     ->falseIcon('heroicon-o-x-circle')
+                //     ->trueColor('success')
+                //     ->falseColor('danger'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('masih_aktif')
