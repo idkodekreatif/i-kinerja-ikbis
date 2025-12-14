@@ -22,17 +22,28 @@ class EditKomponenPoin extends EditRecord
                 ->label('Reset Nilai')
                 ->icon('heroicon-o-arrow-path')
                 ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading('Konfirmasi Reset Nilai')
+                ->modalDescription('Apakah Anda yakin ingin mereset seluruh nilai? Tindakan ini tidak dapat dibatalkan.')
+                ->modalSubmitActionLabel('Ya, Reset')
+                ->modalCancelActionLabel('Batal')
                 ->action(function () {
                     $this->record->update([
                         'non_jad' => null,
-                        'aa' => null,
+                        'aa'      => null,
                         'lektor' => null,
-                        'lk' => null,
-                        'gb' => null,
+                        'lk'     => null,
+                        'gb'     => null,
                     ]);
-                    $this->refreshFormData(['non_jad', 'aa', 'lektor', 'lk', 'gb']);
-                })
-                ->requiresConfirmation(),
+
+                    $this->refreshFormData([
+                        'non_jad',
+                        'aa',
+                        'lektor',
+                        'lk',
+                        'gb',
+                    ]);
+                }),
         ];
     }
 
