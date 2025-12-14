@@ -50,7 +50,13 @@ class PeriodResource extends Resource
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->closeOnDateSelection()
-                            ->rules(['before_or_equal:end_date']),
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                $endDate = $get('end_date');
+                                if ($state && $endDate && $state > $endDate) {
+                                    $set('end_date', $state);
+                                }
+                            }),
 
                         Forms\Components\DatePicker::make('end_date')
                             ->label('Tanggal Selesai')
@@ -58,7 +64,16 @@ class PeriodResource extends Resource
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->closeOnDateSelection()
-                            ->rules(['after_or_equal:start_date']),
+                            ->live()
+                            ->minDate(fn($get) => $get('start_date') ?: now())
+                            ->rules([
+                                fn($get) => function (string $attribute, $value, $fail) use ($get) {
+                                    $startDate = $get('start_date');
+                                    if ($startDate && $value < $startDate) {
+                                        $fail('Tanggal selesai harus setelah atau sama dengan tanggal mulai.');
+                                    }
+                                },
+                            ]),
 
                         Forms\Components\Toggle::make('is_closed')
                             ->label('Status Periode')
@@ -88,18 +103,52 @@ class PeriodResource extends Resource
                     ->schema([
                         Forms\Components\Placeholder::make('duration')
                             ->label('Durasi')
-                            ->content(fn($record) => $record ? $record->duration : '- hari'),
+                            ->content(function ($get) {
+                                $startDate = $get('start_date');
+                                $endDate = $get('end_date');
+
+                                if ($startDate && $endDate) {
+                                    $start = \Carbon\Carbon::parse($startDate);
+                                    $end = \Carbon\Carbon::parse($endDate);
+                                    $days = $start->diffInDays($end) + 1;
+                                    return "{$days} hari";
+                                }
+
+                                return '- hari';
+                            }),
 
                         Forms\Components\Placeholder::make('current_status')
                             ->label('Status Saat Ini')
-                            ->content(function ($record) {
-                                if (!$record) return '-';
+                            ->content(function ($get, $record) {
+                                if ($record) {
+                                    if ($record->isActive()) {
+                                        return 'Sedang Berjalan';
+                                    } elseif ($record->is_closed) {
+                                        return 'Tidak Aktif';
+                                    } elseif ($record->start_date > now()) {
+                                        return 'Belum Dimulai';
+                                    } else {
+                                        return 'Sudah Lewat';
+                                    }
+                                }
 
-                                if ($record->isActive()) {
-                                    return 'Sedang Berjalan';
-                                } elseif ($record->is_closed) {
+                                $startDate = $get('start_date');
+                                $endDate = $get('end_date');
+                                $isClosed = $get('is_closed');
+
+                                if (!$startDate || !$endDate) {
+                                    return '-';
+                                }
+
+                                $today = now()->format('Y-m-d');
+                                $start = \Carbon\Carbon::parse($startDate)->format('Y-m-d');
+                                $end = \Carbon\Carbon::parse($endDate)->format('Y-m-d');
+
+                                if (!$isClosed && $start <= $today && $end >= $today) {
+                                    return 'Akan Berjalan';
+                                } elseif ($isClosed) {
                                     return 'Tidak Aktif';
-                                } elseif ($record->start_date > now()) {
+                                } elseif ($start > $today) {
                                     return 'Belum Dimulai';
                                 } else {
                                     return 'Sudah Lewat';
