@@ -46,28 +46,19 @@ class ListUsers extends ListRecords
             'active' => Tab::make('User Aktif')
                 ->icon('heroicon-o-check-circle')
                 ->badgeColor('success')
-                ->badge(User::where('is_active', true)->whereNull('deleted_at')->count())
+                ->badge(User::where('is_active', true)->count())
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->where('is_active', true)->whereNull('deleted_at')
+                    $query->where('is_active', true)
                 ),
 
             'inactive' => Tab::make('User Nonaktif')
                 ->icon('heroicon-o-x-circle')
                 ->badgeColor('danger')
-                ->badge(User::where('is_active', false)->whereNull('deleted_at')->count())
+                ->badge(User::where('is_active', false)->count())
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->where('is_active', false)->whereNull('deleted_at')
-                ),
-
-            'trashed' => Tab::make('User Terhapus')
-                ->icon('heroicon-o-trash')
-                ->badgeColor('warning')
-                ->badge(User::onlyTrashed()->count())
-                ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->onlyTrashed()
+                    $query->where('is_active', false)
                 ),
         ];
     }

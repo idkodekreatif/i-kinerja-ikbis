@@ -8,6 +8,11 @@ Route::get('/', function () {
 
 
 Route::post('/impersonate/stop', function () {
-    abort_unless(auth()->check(), 403);
-    return auth()->user()->stopImpersonating();
-})->name('impersonate.stop');
+    $user = auth()->user();
+
+    if ($user && method_exists($user, 'stopImpersonating')) {
+        return $user->stopImpersonating();
+    }
+
+    return redirect('/kpi-control-center');
+})->name('impersonate.stop')->middleware(['web', 'auth']);

@@ -13,7 +13,6 @@ class UserStatsWidget extends BaseWidget
         $totalUsers = User::count();
         $activeUsers = User::where('is_active', true)->count();
         $inactiveUsers = User::where('is_active', false)->count();
-        $trashedUsers = User::onlyTrashed()->count();
 
         return [
             Stat::make('Total User', $totalUsers)
@@ -30,12 +29,6 @@ class UserStatsWidget extends BaseWidget
                 ->description($this->getPercentage($inactiveUsers, $totalUsers) . '% dari total')
                 ->descriptionIcon('heroicon-o-x-circle')
                 ->color('danger'),
-
-            Stat::make('User Terhapus', $trashedUsers)
-                ->description($this->getPercentage($trashedUsers, $totalUsers) . '% dari total')
-                ->descriptionIcon('heroicon-o-trash')
-                ->color('warning')
-                ->url($this->getTrashedUsersUrl()),
         ];
     }
 

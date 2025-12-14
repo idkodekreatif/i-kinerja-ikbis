@@ -2,26 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
-use App\Models\Setting\Jabatan\UserJabatanFungsional;
-use App\Models\Setting\Jabatan\UserJabatanStruktural;
-use App\Models\Setting\Jabatan\UserUnitKerja;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -33,30 +21,17 @@ class User extends Authenticatable
         'last_login_ip',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-            'last_login_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
+    ];
 
     public function recordLogin(): void
     {
@@ -71,22 +46,37 @@ class User extends Authenticatable
      */
     public function impersonate(User $target)
     {
+        // Hapus session lama untuk menghindari konflik
+        session()->forget('impersonate');
+
+        // Simpan informasi di session
         session()->put('impersonate', [
             'original_user_id' => $this->id,
-            'target_user_id'   => $target->id,
-            'started_at'       => now(),
+            'original_user_name' => $this->name,
+            'target_user_id' => $target->id,
+            'target_user_name' => $target->name,
+            'started_at' => now(),
         ]);
 
+        // Regenerate session ID untuk keamanan
+        session()->regenerate();
+
+        // Logout dulu dari user saat ini
         auth()->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
 
+        // Clear semua session data kecuali impersonate
+        $impersonateData = session('impersonate');
+        session()->flush();
+        session()->put('impersonate', $impersonateData);
+
+        // Login sebagai user target
         auth()->login($target);
-        request()->session()->regenerate();
 
+        // Record login untuk user target
         $target->recordLogin();
 
-        return redirect()->to('/kpi-control-center');
+        // Redirect ke dashboard
+        return redirect('/kpi-control-center');
     }
 
     /**
@@ -94,18 +84,28 @@ class User extends Authenticatable
      */
     public function stopImpersonating()
     {
-        $originalId = session('impersonate.original_user_id');
+        if ($this->isImpersonated()) {
+            $originalUserId = session('impersonate.original_user_id');
+            $originalUser = User::find($originalUserId);
 
-        session()->forget('impersonate');
+            if ($originalUser) {
+                // Hapus session impersonate
+                session()->forget('impersonate');
 
-        auth()->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+                // Logout dari user saat ini
+                auth()->logout();
 
-        auth()->loginUsingId($originalId);
-        request()->session()->regenerate();
+                // Login kembali sebagai user asli
+                auth()->login($originalUser);
 
-        return redirect()->to('/kpi-control-center');
+                // Regenerate session
+                session()->regenerate();
+
+                return redirect('/kpi-control-center');
+            }
+        }
+
+        return redirect('/kpi-control-center');
     }
 
     /**
@@ -113,15 +113,9 @@ class User extends Authenticatable
      */
     public function isImpersonated(): bool
     {
-        return session()->has('impersonate')
-            && session('impersonate.target_user_id') === $this->id;
+        return session()->has('impersonate') &&
+            session('impersonate.target_user_id') == $this->id;
     }
-
-    public function getImpersonateInfo(): ?array
-    {
-        return session('impersonate');
-    }
-
 
     /**
      * Cek apakah sedang melakukan impersonate
@@ -130,6 +124,14 @@ class User extends Authenticatable
     {
         return session()->has('impersonate') &&
             session('impersonate.original_user_id') == $this->id;
+    }
+
+    /**
+     * Dapatkan informasi impersonate
+     */
+    public function getImpersonateInfo(): ?array
+    {
+        return session('impersonate');
     }
 
     /**
@@ -161,7 +163,6 @@ class User extends Authenticatable
             ->latest('tmt_mulai');
     }
 
-    // Aktif digunakan
     public function unitKerjaHistori()
     {
         return $this->hasMany(\App\Models\Setting\Jabatan\UserUnitKerja::class)
