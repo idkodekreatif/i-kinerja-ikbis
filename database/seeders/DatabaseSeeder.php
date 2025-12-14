@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             UnitKerjaSeeder::class,
             JabatanFungsionalSeeder::class,
             JabatanStrukturalSeeder::class,
+            PeriodsSeeder::class,
         ]);
 
         User::factory()->create([
