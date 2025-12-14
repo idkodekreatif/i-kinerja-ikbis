@@ -25,6 +25,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_active',
+        'last_login_at',
+        'last_login_ip',
     ];
 
     /**
@@ -47,7 +50,59 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    public function recordLogin(): void
+    {
+        $this->update([
+            'last_login_at' => now(),
+            'last_login_ip' => request()->ip(),
+        ]);
+    }
+
+    public function impersonate(User $target)
+    {
+        session()->put('impersonate', [
+            'original_user_id' => $this->id,
+            'target_user_id'   => $target->id,
+            'started_at'       => now(),
+        ]);
+
+        auth()->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        auth()->login($target);
+        request()->session()->regenerate();
+
+        $target->recordLogin();
+
+        return redirect(\Filament\Facades\Filament::getUrl());
+    }
+
+    public function stopImpersonating()
+    {
+        $originalId = session('impersonate.original_user_id');
+
+        session()->forget('impersonate');
+
+        auth()->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        auth()->loginUsingId($originalId);
+        request()->session()->regenerate();
+
+        return redirect(\Filament\Facades\Filament::getUrl());
+    }
+
+    public function isImpersonated(): bool
+    {
+        return session()->has('impersonate')
+            && session('impersonate.target_user_id') === $this->id;
     }
 
     public function jabatanStrukturals()
