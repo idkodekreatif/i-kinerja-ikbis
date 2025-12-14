@@ -8,13 +8,14 @@ use App\Models\Setting\Jabatan\UserJabatanFungsional;
 use App\Models\Setting\Jabatan\UserJabatanStruktural;
 use App\Models\Setting\Jabatan\UserUnitKerja;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -25,6 +26,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
         'is_active',
         'last_login_at',
         'last_login_ip',
@@ -63,6 +66,9 @@ class User extends Authenticatable
         ]);
     }
 
+    /**
+     * Mulai impersonate sebagai user lain
+     */
     public function impersonate(User $target)
     {
         session()->put('impersonate', [
@@ -80,9 +86,12 @@ class User extends Authenticatable
 
         $target->recordLogin();
 
-        return redirect(\Filament\Facades\Filament::getUrl());
+        return redirect()->to('/kpi-control-center');
     }
 
+    /**
+     * Stop impersonate dan kembali ke user asli
+     */
     public function stopImpersonating()
     {
         $originalId = session('impersonate.original_user_id');
@@ -96,13 +105,47 @@ class User extends Authenticatable
         auth()->loginUsingId($originalId);
         request()->session()->regenerate();
 
-        return redirect(\Filament\Facades\Filament::getUrl());
+        return redirect()->to('/kpi-control-center');
     }
 
+    /**
+     * Cek apakah sedang di-impersonate
+     */
     public function isImpersonated(): bool
     {
         return session()->has('impersonate')
             && session('impersonate.target_user_id') === $this->id;
+    }
+
+    public function getImpersonateInfo(): ?array
+    {
+        return session('impersonate');
+    }
+
+
+    /**
+     * Cek apakah sedang melakukan impersonate
+     */
+    public function isImpersonating(): bool
+    {
+        return session()->has('impersonate') &&
+            session('impersonate.original_user_id') == $this->id;
+    }
+
+    /**
+     * Scope untuk user aktif
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope untuk user nonaktif
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
     }
 
     public function jabatanStrukturals()

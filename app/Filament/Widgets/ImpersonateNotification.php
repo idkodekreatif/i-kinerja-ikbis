@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use Filament\Widgets\Widget;
+use Livewire\Attributes\On;
 
 class ImpersonateNotification extends Widget
 {
@@ -10,7 +11,7 @@ class ImpersonateNotification extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
-    public function shouldShow(): bool
+    public static function canView(): bool
     {
         return auth()->check() && auth()->user()->isImpersonated();
     }

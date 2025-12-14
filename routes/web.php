@@ -6,6 +6,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::post('/impersonate/stop', function () {
+    abort_unless(auth()->check(), 403);
     return auth()->user()->stopImpersonating();
-})->middleware('auth')->name('impersonate.stop');
+})->name('impersonate.stop');
