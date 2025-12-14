@@ -13,4 +13,16 @@ class Dashboard extends BaseDashboard
             ImpersonateNotification::class,
         ];
     }
+
+
+    // Optional: Tambahkan ini untuk custom heading saat impersonate
+    public function getHeading(): string
+    {
+        if (auth()->check() && auth()->user()->isImpersonated()) {
+            $info = auth()->user()->getImpersonateInfo();
+            return 'Dashboard (Impersonate: ' . ($info['target_user_name'] ?? 'User') . ')';
+        }
+
+        return parent::getHeading();
+    }
 }
