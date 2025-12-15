@@ -31,11 +31,9 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // BUKAN unik permanen, tapi historis
-            $table->unique(
-                ['user_id', 'jabatan_fungsional_id', 'tmt_mulai'],
-                'uniq_user_jabfung_tmt'
-            );
+            $table->unique(['user_id'], 'user_jabfung_active_unique')
+                ->where('status', 'aktif')
+                ->whereNull('tmt_selesai');
         });
     }
 

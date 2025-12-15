@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('unit_kerja', function (Blueprint $table) {
+        Schema::create('periods', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // IT, HRD, Keuangan
-            $table->string('type')->nullable(); // Akademik / Non-akademik
-            $table->text('description')->nullable();
+            $table->string('name');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->boolean('is_closed')->default(false);
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('unit_kerja');
+        Schema::dropIfExists('periods');
     }
 };
