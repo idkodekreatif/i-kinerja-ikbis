@@ -19,7 +19,7 @@ class AssessmentResource extends Resource
     protected static ?string $model = Assessment::class;
 
     protected static ?string $navigationGroup = 'Penilaian';
-    protected static ?string $navigationLabel = 'ITIKAD';
+    protected static ?string $navigationLabel = 'Assesment';
     protected static ?string $navigationIcon = 'heroicon-o-folder';
     protected static ?string $navigationParentItem = null; // Ini adalah parent menu
 

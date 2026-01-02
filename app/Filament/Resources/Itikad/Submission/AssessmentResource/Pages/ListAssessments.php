@@ -10,10 +10,13 @@ class ListAssessments extends ListRecords
 {
     protected static string $resource = AssessmentResource::class;
 
-    protected function getHeaderActions(): array
+    public function mount(): void
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+        parent::mount();
+
+        // ⬇️ Redirect langsung ke halaman create
+        $this->redirect(
+            AssessmentResource::getUrl('create')
+        );
     }
 }
