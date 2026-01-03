@@ -24,30 +24,53 @@ class Period extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_closed', false);
+        $today = now()->format('Y-m-d');
+        return $query->where('is_closed', false)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today);
     }
 
     public function scopeInactive($query)
     {
-        return $query->where('is_closed', true);
+        return $query->where('is_closed', true)
+            ->orWhereDate('end_date', '<', now()->format('Y-m-d'));
     }
 
     public function scopeCurrent($query)
     {
-        $today = now()->format('Y-m-d');
-        return $query->where('start_date', '<=', $today)
-            ->where('end_date', '>=', $today)
-            ->where('is_closed', false);
+        return $this->scopeActive($query);
     }
 
     public function getStatusAttribute()
     {
-        return $this->is_closed ? 'Tidak Aktif' : 'Aktif';
+        $today = now()->format('Y-m-d');
+
+        if ($this->is_closed) {
+            return 'Tertutup';
+        }
+
+        if ($this->end_date < $today) {
+            return 'Kadaluarsa';
+        }
+
+        if ($this->start_date > $today) {
+            return 'Belum Dimulai';
+        }
+
+        return 'Aktif';
     }
 
     public function getStatusColorAttribute()
     {
-        return $this->is_closed ? 'danger' : 'success';
+        $status = $this->status;
+
+        return match ($status) {
+            'Aktif' => 'success',
+            'Kadaluarsa' => 'danger',
+            'Belum Dimulai' => 'warning',
+            'Tertutup' => 'danger',
+            default => 'secondary',
+        };
     }
 
     public function isActive()

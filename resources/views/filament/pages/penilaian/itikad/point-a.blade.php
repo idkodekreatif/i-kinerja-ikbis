@@ -93,10 +93,28 @@
     <div class="space-y-6">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-                    Form Point A - Pendidikan dan Pengajaran
-                </h2>
-            </div>
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                Form Point A - Pendidikan dan Pengajaran
+            </h2>
+            @php
+                $activePeriod = \App\Models\Setting\Period::active()->first();
+            @endphp
+            @if($activePeriod)
+                <div class="bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm">
+                    <i class="fas fa-calendar-alt mr-1"></i>
+                    Periode: {{ $activePeriod->name }}
+                    ({{ \Carbon\Carbon::parse($activePeriod->start_date)->format('d/m/Y') }} -
+                     {{ \Carbon\Carbon::parse($activePeriod->end_date)->format('d/m/Y') }})
+                </div>
+            @else
+                <div class="bg-red-100 text-red-800 px-3 py-1 rounded-md text-sm">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Tidak ada periode aktif!
+                </div>
+            @endif
+        </div>
+    </div>
 
             <div class="p-6">
                 <form id="pointAForm" wire:submit.prevent="save" enctype="multipart/form-data">
@@ -900,208 +918,82 @@
         </div>
     </div>
 
-    @livewireScripts
+   @livewireScripts
     @push('scripts')
-        <!-- Include jQuery -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <!-- Include SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <!-- Include your existing calculation script -->
         <script src="{{ asset('js/penilaian/itikad/point-a-calculations.js') }}"></script>
 
         <script>
-            // Data dari PHP untuk JavaScript (untuk edit mode)
-            const formDataFromPHP = @json($this->formDataForJS);
+            // Ambil data awal dari PHP
+            const initialData = @json($this->formDataForJS);
 
-            // Fungsi untuk load data dari database ke form
-            function loadFormData() {
-                if (Object.keys(formDataFromPHP).length > 0) {
-                    console.log('Loading form data from PHP:', formDataFromPHP);
+            function fillForm() {
+                if (!initialData || Object.keys(initialData).length === 0) return;
 
-                    // Load A1-A13 radio buttons
-                    for (let i = 1; i <= 13; i++) {
-                        const value = formDataFromPHP[`A${i}`];
-                        if (value) {
-                            const radio = document.querySelector(`input[name="A${i}"][value="${value}"]`);
-                            if (radio) radio.checked = true;
-                        }
-                    }
-
-                    // Load additional inputs
-                    const additionalFields = [
-                        'JumlahYangDihasilkanA11_5',
-                        'JumlahYangDihasilkanA12_3',
-                        'JumlahYangDihasilkanA12_4',
-                        'JumlahYangDihasilkanA12_5'
-                    ];
-
-                    additionalFields.forEach(field => {
-                        const value = formDataFromPHP[field];
-                        if (value !== undefined) {
-                            const input = document.getElementById(field);
-                            if (input) input.value = value;
-                        }
-                    });
-
-                    // Trigger calculation after loading data
-                    setTimeout(() => {
-                        if (typeof sum === 'function') {
-                            sum();
-                        }
-                    }, 100);
-                }
-            }
-
-            // Fungsi untuk sync data ke hidden inputs sebelum submit
-            // Fungsi untuk sync data ke hidden inputs DAN update display inputs
-            function syncDataToHiddenInputs() {
-                console.log('Syncing data to hidden inputs and updating display...');
-
-                // Daftar field yang perlu di-sync
-                const fieldsToSync = [
-                    'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'A13',
-                    'JumlahYangDihasilkanA11_5',
-                    'JumlahYangDihasilkanA12_3',
-                    'JumlahYangDihasilkanA12_4',
-                    'JumlahYangDihasilkanA12_5',
-                    'TotalSkorPendidikanPointA',
-                    'TotalKelebihanA11',
-                    'TotalKelebihanA12',
-                    'TotalKelebihanSkor',
-                    'nilaiPendidikandanPengajaran',
-                    'NilaiTambahPendidikanDanPengajaran',
-                    'NilaiTotalPendidikanDanPengajaran'
-                ];
-
-                fieldsToSync.forEach(field => {
-                    const displayInput = document.getElementById(field);
-                    const hiddenInput = document.getElementById(field);
-
-                    if (displayInput && hiddenInput) {
-                        // Jika display input ada value, sync ke hidden
-                        if (displayInput.value !== '') {
-                            hiddenInput.value = displayInput.value;
-                        }
-                        // Jika hidden input ada value (dari perhitungan), sync ke display
-                        else if (hiddenInput.value !== '') {
-                            displayInput.value = hiddenInput.value;
-                        }
-                    }
-                });
-
-                // Sync khusus untuk radio buttons A1-A13
+                // Isi Radio Buttons
                 for (let i = 1; i <= 13; i++) {
-                    const fieldName = `A${i}`;
-                    const radio = document.querySelector(`input[name="${fieldName}"]:checked`);
-                    const hiddenInput = document.getElementById(fieldName);
-
-                    if (radio && hiddenInput) {
-                        hiddenInput.value = radio.value;
+                    const val = initialData[`A${i}`];
+                    if (val) {
+                        const radio = document.querySelector(`input[name="A${i}"][value="${val}"]`);
+                        if (radio) radio.checked = true;
                     }
                 }
 
-                // Log untuk debugging
-                console.log('Sync complete. Display values:', {
-                    TotalSkorPendidikanPointA: document.getElementById('TotalSkorPendidikanPointA').value,
-                    nilaiPendidikandanPengajaran: document.getElementById('nilaiPendidikandanPengajaran').value,
-                    NilaiTotalPendidikanDanPengajaran: document.getElementById('NilaiTotalPendidikanDanPengajaran')
-                        .value
+                // Isi Input Numbers
+                const numberFields = ['JumlahYangDihasilkanA11_5', 'JumlahYangDihasilkanA12_3', 'JumlahYangDihasilkanA12_4', 'JumlahYangDihasilkanA12_5'];
+                numberFields.forEach(f => {
+                    const el = document.getElementById(f);
+                    if (el && initialData[f]) el.value = initialData[f];
                 });
+
+                setTimeout(sum, 500);
             }
 
-            // Fungsi handle submit
             async function handleSubmit() {
-                // Sync data ke hidden inputs
-                syncDataToHiddenInputs();
+                // 1. Hitung ulang
+                if (typeof sum === 'function') sum();
 
-                // Validasi minimal
-                const requiredFields = ['fileA1', 'fileA2', 'fileA3', 'fileA4', 'fileA5', 'fileA6', 'fileA7', 'fileA8',
-                    'fileA9', 'fileA10', 'fileA11', 'fileA12', 'fileA13'
-                ];
-                let isValid = true;
-
-                // Check if at least one radio button per row is selected
+                // 2. Validasi radio
                 for (let i = 1; i <= 13; i++) {
-                    const radios = document.getElementsByName(`A${i}`);
-                    const isChecked = Array.from(radios).some(radio => radio.checked);
-                    if (!isChecked) {
-                        isValid = false;
-                        alert(`Harap pilih skor untuk A.${i}`);
-                        break;
+                    if (!document.querySelector(`input[name="A${i}"]:checked`)) {
+                        Swal.fire('Gagal', `Harap pilih skor untuk item A.${i}`, 'error');
+                        return;
                     }
                 }
 
-                if (!isValid) {
-                    return;
-                }
+                // 3. Sinkronisasi Data Tabel ke Livewire State
+                const dataToSync = {};
 
-                // Show confirmation dialog
-                const result = await Swal.fire({
-                    title: 'Apakah Anda yakin?',
-                    text: "Anda akan menyimpan data Point A.",
+                // Ambil semua input di tabel yang memiliki ID
+                document.querySelectorAll('.point-a-table input').forEach(input => {
+                    if (input.type === 'radio') {
+                        if (input.checked) dataToSync[input.name] = input.value;
+                    } else if (input.id) {
+                        dataToSync[input.id] = input.value || 0;
+                    }
+                });
+
+                // Masukkan ke array data di Livewire
+                @this.set('data', {
+                    ...Object.fromEntries(Object.entries(@this.get('data'))),
+                    ...dataToSync
+                }, true);
+
+                // 4. Konfirmasi & Save
+                const res = await Swal.fire({
+                    title: 'Simpan perubahan?',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Ya, Simpan!',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true
+                    confirmButtonText: 'Ya, Simpan'
                 });
 
-                if (result.isConfirmed) {
-                    // Trigger Livewire submit
-                    const form = document.getElementById('pointAForm');
-                    form.dispatchEvent(new Event('submit', {
-                        bubbles: true
-                    }));
+                if (res.isConfirmed) {
+                    @this.save();
                 }
             }
 
-            // Initialize when page loads
-            document.addEventListener('DOMContentLoaded', function() {
-                // Load data from PHP (for edit mode)
-                loadFormData();
-
-                // Setup event listeners for number inputs
-                const numberInputs = [
-                    'JumlahYangDihasilkanA11_5',
-                    'JumlahYangDihasilkanA12_3',
-                    'JumlahYangDihasilkanA12_4',
-                    'JumlahYangDihasilkanA12_5'
-                ];
-
-                numberInputs.forEach(id => {
-                    const input = document.getElementById(id);
-                    if (input) {
-                        input.addEventListener('input', function() {
-                            setTimeout(sum, 100);
-                        });
-                    }
-                });
-
-                // Setup event listeners for radio buttons
-                for (let i = 1; i <= 13; i++) {
-                    const radios = document.getElementsByName(`A${i}`);
-                    radios.forEach(radio => {
-                        radio.addEventListener('change', function() {
-                            setTimeout(sum, 100);
-                        });
-                    });
-                }
-
-                // Initial calculation
-                setTimeout(sum, 200);
-            });
-
-            // Override original sum function to add sync to hidden inputs
-            const originalSum = window.sum;
-            window.sum = function() {
-                // Call original function
-                if (typeof originalSum === 'function') {
-                    originalSum();
-                }
-
-                // Sync to hidden inputs after calculation
-                setTimeout(syncDataToHiddenInputs, 50);
-            };
+            document.addEventListener('DOMContentLoaded', fillForm);
         </script>
     @endpush
 </x-filament-panels::page>

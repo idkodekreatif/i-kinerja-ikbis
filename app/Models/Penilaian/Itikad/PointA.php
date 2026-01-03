@@ -13,7 +13,7 @@ class PointA extends Model
 
     protected $table = 'point_a';
 
-    protected $guarded = ['id'];
+    protected $guarded = [];
 
     /*
     |--------------------------------------------------------------------------
