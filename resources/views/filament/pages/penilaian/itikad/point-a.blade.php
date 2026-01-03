@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     @livewireStyles
-    @push('styles')
+     @push('styles')
         <style>
             input::-webkit-outer-spin-button,
             input::-webkit-inner-spin-button {
@@ -16,14 +16,27 @@
                 font-size: 0.875rem;
                 width: 100%;
                 border-collapse: collapse;
+                /* Tambahan agar tabel tidak terlalu mampat */
+                table-layout: auto;
+                min-width: 1300px;
             }
 
             .point-a-table th,
             .point-a-table td {
                 vertical-align: middle;
-                padding: 0.5rem;
+                padding: 0.75rem 0.5rem;
                 border: 1px solid #e5e7eb;
+                word-wrap: break-word;
             }
+
+            /* Pengaturan Lebar Kolom Spesifik */
+            .col-no { width: 40px; }
+            .col-komponen { width: 250px; }
+            .col-skor-radio { width: 45px; }
+            .col-bukti { width: 300px; min-width: 300px; } /* Kolom Bukti diperlebar */
+            .col-skor-kuning { width: 90px; min-width: 90px; }
+            .col-skor-maks { width: 100px; min-width: 100px; }
+            .col-skor-bobot { width: 120px; min-width: 120px; }
 
             .point-a-table .bg-warning {
                 background-color: #fef3c7 !important;
@@ -40,6 +53,7 @@
                 width: 100%;
                 text-align: center;
                 border: none;
+                padding: 0.5rem 0;
             }
 
             .point-a-table input[type="number"]:not([readonly]) {
@@ -47,15 +61,16 @@
                 text-align: center;
                 border: 1px solid #d1d5db;
                 border-radius: 0.375rem;
-                padding: 0.25rem;
+                padding: 0.4rem;
             }
 
             .form-label.text-danger {
                 color: #dc2626;
-                font-weight: 500;
-                font-size: 0.75rem;
-                margin-bottom: 0.25rem;
+                font-weight: 600;
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
                 display: block;
+                line-height: 1.2;
             }
 
             .filament-forms-file-upload-component {
@@ -64,6 +79,13 @@
 
             .file-upload-container {
                 margin-top: 0.5rem;
+            }
+
+            .file-upload-container input[type="file"] {
+                background: #fff;
+                padding: 0.25rem;
+                border: 1px solid #d1d5db;
+                border-radius: 4px;
             }
         </style>
     @endpush
@@ -130,20 +152,20 @@
                                 <!-- A.1 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Nilai rerata &lt; 3.00 (KURANG)</td>
-                                    <td class="text-sm">Nilai rerata >= 3.00 - &lt; 3.60 (CUKUP)</td>
-                                    <td class="text-sm">Nilai rerata >= 3.60 - &lt; 4.60 (BAIK)</td>
-                                    <td class="text-sm">Nilai rerata >= 4.60 - &lt; 4.80 (SANGAT BAIK)</td>
-                                    <td class="text-sm">Nilai rerata >= 4.80 - 5.00 (ISTIMEWA)</td>
+                                    <td class="text-xs">Nilai rerata &lt; 3.00 (KURANG)</td>
+                                    <td class="text-xs">Nilai rerata >= 3.00 - &lt; 3.60 (CUKUP)</td>
+                                    <td class="text-xs">Nilai rerata >= 3.60 - &lt; 4.60 (BAIK)</td>
+                                    <td class="text-xs">Nilai rerata >= 4.60 - &lt; 4.80 (SANGAT BAIK)</td>
+                                    <td class="text-xs">Nilai rerata >= 4.80 - 5.00 (ISTIMEWA)</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload Hasil evaluasi
                                             perkuliahan</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA1"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA1')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -172,20 +194,20 @@
                                 <!-- A.2 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak menyusun sama sekali</td>
-                                    <td class="text-sm">Menyusun kurang dari 25% untuk mata kuliah yang diasuh</td>
-                                    <td class="text-sm">Menyusun untuk 25% - 50% dari mata kuliah yang diasuh</td>
-                                    <td class="text-sm">Menyusun untuk 51% - 75% dari mata kuliah yang diasuh</td>
-                                    <td class="text-sm">Menyusun untuk lebih dari 75% mata kuliah yang diasuh</td>
+                                    <td class="text-xs">Tidak menyusun sama sekali</td>
+                                    <td class="text-xs">Menyusun kurang dari 25% untuk mata kuliah yang diasuh</td>
+                                    <td class="text-xs">Menyusun untuk 25% - 50% dari mata kuliah yang diasuh</td>
+                                    <td class="text-xs">Menyusun untuk 51% - 75% dari mata kuliah yang diasuh</td>
+                                    <td class="text-xs">Menyusun untuk lebih dari 75% mata kuliah yang diasuh</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload Checklist RPS dari
                                             Prodi</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA2"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA2')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -214,25 +236,25 @@
                                 <!-- A.3 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Kurang dari 8 sks per Tahun Ajaran (semester Gasal dan
+                                    <td class="text-xs">Kurang dari 8 sks per Tahun Ajaran (semester Gasal dan
                                         Genap)</td>
-                                    <td class="text-sm">Mengampu total 8 - 16 sks per Tahun Ajaran (semester Gasal
+                                    <td class="text-xs">Mengampu total 8 - 16 sks per Tahun Ajaran (semester Gasal
                                         dan Genap)</td>
-                                    <td class="text-sm">Mengampu total 17 - 22 sks per Tahun Ajaran (semester Gasal
+                                    <td class="text-xs">Mengampu total 17 - 22 sks per Tahun Ajaran (semester Gasal
                                         dan Genap)</td>
-                                    <td class="text-sm">Mengampu total 23 - 30 sks per Tahun Ajaran (semester Gasal
+                                    <td class="text-xs">Mengampu total 23 - 30 sks per Tahun Ajaran (semester Gasal
                                         dan Genap)</td>
-                                    <td class="text-sm">Mengampu rata-rata 31 sks atau lebih, per Tahun Ajaran
+                                    <td class="text-xs">Mengampu rata-rata 31 sks atau lebih, per Tahun Ajaran
                                         (semester Gasal dan Genap)</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload Jumlah SKS (termasuk SKS
                                             Mengajar, Jabatan Struktural, dll)</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA3"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA3')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -260,20 +282,20 @@
                                 <!-- A.4 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak membimbing mahasiswa sama sekali</td>
-                                    <td class="text-sm">Membimbing 1 mata kuliah dengan tugas akhir seminar</td>
-                                    <td class="text-sm">Membimbing 2 - 3 mata kuliah dengan tugas akhir seminar</td>
-                                    <td class="text-sm">Membimbing 4 mata kuliah dengan tugas akhir seminar</td>
-                                    <td class="text-sm">Membimbing >4 mata kuliah dengan tugas akhir seminar</td>
+                                    <td class="text-xs">Tidak membimbing mahasiswa sama sekali</td>
+                                    <td class="text-xs">Membimbing 1 mata kuliah dengan tugas akhir seminar</td>
+                                    <td class="text-xs">Membimbing 2 - 3 mata kuliah dengan tugas akhir seminar</td>
+                                    <td class="text-xs">Membimbing 4 mata kuliah dengan tugas akhir seminar</td>
+                                    <td class="text-xs">Membimbing >4 mata kuliah dengan tugas akhir seminar</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload SK Pembimbing dan Keterangan
                                             Prodi</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA4"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA4')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -303,23 +325,23 @@
                                 <!-- A.5 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak membimbing mahasiswa PKL/ PPM/KKM</td>
-                                    <td class="text-sm">Membimbing mahasiswa PKL/ PPM/KKM (0.5 Kelompok ATAU 4 - 7
+                                    <td class="text-xs">Tidak membimbing mahasiswa PKL/ PPM/KKM</td>
+                                    <td class="text-xs">Membimbing mahasiswa PKL/ PPM/KKM (0.5 Kelompok ATAU 4 - 7
                                         mahasiswa PKL)</td>
-                                    <td class="text-sm">Membimbing mahasiswa PKL dan/ atau PPM/KKM (1 Kelompok ATAU
+                                    <td class="text-xs">Membimbing mahasiswa PKL dan/ atau PPM/KKM (1 Kelompok ATAU
                                         8 - 10 mahasiswa)</td>
-                                    <td class="text-sm">Membimbing mahasiswa PKL dan/ atau PPM/KKM (1.5 Kelompok
+                                    <td class="text-xs">Membimbing mahasiswa PKL dan/ atau PPM/KKM (1.5 Kelompok
                                         ATAU 11 - 15 mahasiswa)</td>
-                                    <td class="text-sm">Membimbing mahasiswa PKL dan/ atau PPM/KKM (2 Kelompok ATAU
+                                    <td class="text-xs">Membimbing mahasiswa PKL dan/ atau PPM/KKM (2 Kelompok ATAU
                                         16 - 20 mahasiswa, atau lebih)</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload SK Pembimbingan</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA5"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA5')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -349,23 +371,23 @@
                                 <!-- A.6 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak sedang membimbing Skripsi</td>
-                                    <td class="text-sm">Membimbing skripsi sebagai pembimbing pendamping (1 - 8
+                                    <td class="text-xs">Tidak sedang membimbing Skripsi</td>
+                                    <td class="text-xs">Membimbing skripsi sebagai pembimbing pendamping (1 - 8
                                         lulusan)</td>
-                                    <td class="text-sm">Membimbing skripsi sebagai pembimbing pendamping (>8
+                                    <td class="text-xs">Membimbing skripsi sebagai pembimbing pendamping (>8
                                         lulusan)</td>
-                                    <td class="text-sm">Membimbing skripsi sebagai pembimbing utama (1 - 8 lulusan)
+                                    <td class="text-xs">Membimbing skripsi sebagai pembimbing utama (1 - 8 lulusan)
                                     </td>
-                                    <td class="text-sm">Membimbing skripsi sebagai pembimbing utama (>8 lulusan)
+                                    <td class="text-xs">Membimbing skripsi sebagai pembimbing utama (>8 lulusan)
                                     </td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload SK Pembimbingan</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA6"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA6')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -394,20 +416,20 @@
                                 <!-- A.7 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak pernah menguji dalam ujian akhir mahasiswa</td>
-                                    <td class="text-sm">Dosen menjadi anggota penguji (1 - 8 mahasiswa)</td>
-                                    <td class="text-sm">Dosen menjadi anggota penguji (> 8 mahasiswa)</td>
-                                    <td class="text-sm">Dosen menjadi Ketua Penguji (1 - 8 mahasiswa)</td>
-                                    <td class="text-sm">Dosen menjadi Ketua Penguji (> 8 mahasiswa)</td>
+                                    <td class="text-xs">Tidak pernah menguji dalam ujian akhir mahasiswa</td>
+                                    <td class="text-xs">Dosen menjadi anggota penguji (1 - 8 mahasiswa)</td>
+                                    <td class="text-xs">Dosen menjadi anggota penguji (> 8 mahasiswa)</td>
+                                    <td class="text-xs">Dosen menjadi Ketua Penguji (1 - 8 mahasiswa)</td>
+                                    <td class="text-xs">Dosen menjadi Ketua Penguji (> 8 mahasiswa)</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload SK penunjukkan sebagai
                                             penguji</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA7"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA7')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -436,20 +458,20 @@
                                 <!-- A.8 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Menjadi pembimbing akademik kurang dari 10 Mahasiswa</td>
-                                    <td class="text-sm">Menjadi pembimbing akademik (10 - 17 mahasiswa)</td>
-                                    <td class="text-sm">Menjadi pembimbing akademik (18 - 24 mahasiswa)</td>
-                                    <td class="text-sm">Menjadi pembimbing akademik (25 - 30 mahasiswa)</td>
-                                    <td class="text-sm">Menjadi pembimbing akademik (>30 mahasiswa)</td>
+                                    <td class="text-xs">Menjadi pembimbing akademik kurang dari 10 Mahasiswa</td>
+                                    <td class="text-xs">Menjadi pembimbing akademik (10 - 17 mahasiswa)</td>
+                                    <td class="text-xs">Menjadi pembimbing akademik (18 - 24 mahasiswa)</td>
+                                    <td class="text-xs">Menjadi pembimbing akademik (25 - 30 mahasiswa)</td>
+                                    <td class="text-xs">Menjadi pembimbing akademik (>30 mahasiswa)</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload SK Dosen Pembimbing Akademik
                                             (Dosen PA/Dosen Wali)</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA8"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA8')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -478,23 +500,23 @@
                                 <!-- A.9 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Kurang dari 80% Jumlah mahasiswa yang dibimbingnya lancar
+                                    <td class="text-xs">Kurang dari 80% Jumlah mahasiswa yang dibimbingnya lancar
                                         (Jumlah mahasiswa melanjutkan studi/lulus < 80% )</td>
-                                    <td class="text-sm">Tidak diperhitungkan</td>
-                                    <td class="text-sm">80% s.d. < 100% Jumlah mahasiswa yang dibimbingnya lancar
+                                    <td class="text-xs">Tidak diperhitungkan</td>
+                                    <td class="text-xs">80% s.d. < 100% Jumlah mahasiswa yang dibimbingnya lancar
                                             (Jumlah mahasiswa melanjutkan studi/lulus=80% s.d. < 100%)</td>
-                                    <td class="text-sm">Tidak diperhitungkan</td>
-                                    <td class="text-sm">100% jumlah mahasiswa yang dibimbingnya lancar (Jumlah
+                                    <td class="text-xs">Tidak diperhitungkan</td>
+                                    <td class="text-xs">100% jumlah mahasiswa yang dibimbingnya lancar (Jumlah
                                         mahasiswa melanjutkan studi/lulus = 100%)</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload Keterangan dari Prodi dan
                                             BAAK</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA9"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA9')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -523,22 +545,22 @@
                                 <!-- A.10 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak sedang menjadi pembina kegiatan akademik maupun
+                                    <td class="text-xs">Tidak sedang menjadi pembina kegiatan akademik maupun
                                         kemahasiswaan</td>
-                                    <td class="text-sm">Menjadi pembina 1 (satu) kegiatan kemahasiswaan saja</td>
-                                    <td class="text-sm">Menjadi penasihat akademik saja</td>
-                                    <td class="text-sm">Menjadi penasihat akademik dan pembina 1 kegiatan
+                                    <td class="text-xs">Menjadi pembina 1 (satu) kegiatan kemahasiswaan saja</td>
+                                    <td class="text-xs">Menjadi penasihat akademik saja</td>
+                                    <td class="text-xs">Menjadi penasihat akademik dan pembina 1 kegiatan
                                         kemahasiswaan</td>
-                                    <td class="text-sm">Menjadi penasihat akademik dan pembina kegiatan
+                                    <td class="text-xs">Menjadi penasihat akademik dan pembina kegiatan
                                         kemahasiswaan lebih dari 1</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload Keterangan dari Prodi</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA10"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA10')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -567,24 +589,24 @@
                                 <!-- A.11 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak pernah mengusulkan metode baru</td>
-                                    <td class="text-sm">Pernah mengusulkan metode baru, namun tidak
+                                    <td class="text-xs">Tidak pernah mengusulkan metode baru</td>
+                                    <td class="text-xs">Pernah mengusulkan metode baru, namun tidak
                                         diimplementasikan</td>
-                                    <td class="text-sm">Telah mengusulkan metode baru dan sedang dalam proses review
+                                    <td class="text-xs">Telah mengusulkan metode baru dan sedang dalam proses review
                                         oleh Dekan / Tim Kurikulum</td>
-                                    <td class="text-sm">Metode baru yang diusulkan telah disetujui namun belum
+                                    <td class="text-xs">Metode baru yang diusulkan telah disetujui namun belum
                                         diterapkan dalam PT / Fakultas / Prodinya</td>
-                                    <td class="text-sm">Metode baru yang diusulkan telah disetujui dan
+                                    <td class="text-xs">Metode baru yang diusulkan telah disetujui dan
                                         diimplementasikan dalam PT / Fakultas / Prodinya</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload Bukti tertulis terkait metode
                                             pembelajaran baru yang telah disampaikan</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA11"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA11')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -660,14 +682,14 @@
                                 <!-- A.12 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak pernah menyusun bahan pengajaran sendiri</td>
-                                    <td class="text-sm">Menyusun bahan pengajaran dalam bentuk naskah tutorial yang
+                                    <td class="text-xs">Tidak pernah menyusun bahan pengajaran sendiri</td>
+                                    <td class="text-xs">Menyusun bahan pengajaran dalam bentuk naskah tutorial yang
                                         ditulis mengikuti kaidah tulisan ilmiah</td>
-                                    <td class="text-sm">Membuat alat bantu dalam bentuk audio visual, atau model
+                                    <td class="text-xs">Membuat alat bantu dalam bentuk audio visual, atau model
                                         yang memudahkan proses pengajaran</td>
-                                    <td class="text-sm">Menyusun diktat, modul, model, dan petunjuk praktikum untuk
+                                    <td class="text-xs">Menyusun diktat, modul, model, dan petunjuk praktikum untuk
                                         membantu proses pengajaran</td>
-                                    <td class="text-sm">Menyusun buku ajar/buku number untuk suatu mata kuliah,
+                                    <td class="text-xs">Menyusun buku ajar/buku number untuk suatu mata kuliah,
                                         mengikuti kaidah buku number serta diterbitkan secara resmi dan
                                         disebarluaskan</td>
                                     <td rowspan="2">
@@ -675,10 +697,10 @@
                                             yang dihasilkan, dan jumlah mata kuliah diperhitungkan</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA12"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA12')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
@@ -767,21 +789,21 @@
                                 <!-- A.13 -->
                                 <tr>
                                     <td colspan="2" class="text-left">Deskripsi penilaian:</td>
-                                    <td class="text-sm">Tidak sedang menduduki jabatan struktural</td>
-                                    <td class="text-sm">Sedang menjabat sebagai Kepala Program Studi, Ka. Sub.
+                                    <td class="text-xs">Tidak sedang menduduki jabatan struktural</td>
+                                    <td class="text-xs">Sedang menjabat sebagai Kepala Program Studi, Ka. Sub.
                                         Lembaga</td>
-                                    <td class="text-sm">Sedang menjabat sebagai Dekan, Ka. Lembaga, Ka. UPT</td>
-                                    <td class="text-sm">Sedang menjabat sebagai Wakil Rektor</td>
-                                    <td class="text-sm">Sedang menjabat sebagai Rektor</td>
+                                    <td class="text-xs">Sedang menjabat sebagai Dekan, Ka. Lembaga, Ka. UPT</td>
+                                    <td class="text-xs">Sedang menjabat sebagai Wakil Rektor</td>
+                                    <td class="text-xs">Sedang menjabat sebagai Rektor</td>
                                     <td rowspan="2">
                                         <label class="form-label text-danger">* Upload SK Pengangkatan sebagai
                                             Pejabat Struktural</label>
                                         <div class="file-upload-container">
                                             <input type="file" wire:model="data.fileA13"
-                                                class="w-full text-sm border-gray-300 rounded-md"
+                                                class="w-full text-xs border-gray-300 rounded-md"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             @error('data.fileA13')
-                                                <span class="text-red-500 text-sm">{{ $message }}</span>
+                                                <span class="text-red-500 text-xs">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </td>
