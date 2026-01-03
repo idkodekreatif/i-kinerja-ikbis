@@ -4,7 +4,6 @@ namespace App\Filament\Pages\Penilaian\Itikad;
 
 use App\Models\Penilaian\Itikad\PointA as PointAModel;
 use App\Models\Setting\Period;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -13,10 +12,12 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use Livewire\WithFileUploads;
 
 class PointA extends Page implements HasForms
 {
     use InteractsWithForms;
+    use WithFileUploads; // TAMBAHKAN INI untuk Livewire file upload
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Penilaian Dosen';
@@ -25,7 +26,39 @@ class PointA extends Page implements HasForms
     protected static ?string $slug = 'penilaian-dosen/itikad/point-a';
 
     public ?array $data = [];
-    public array $formDataForJS = []; // Data untuk JavaScript
+    public array $formDataForJS = [];
+
+    // Tambahkan property untuk file upload
+    public $fileA1;
+    public $fileA2;
+    public $fileA3;
+    public $fileA4;
+    public $fileA5;
+    public $fileA6;
+    public $fileA7;
+    public $fileA8;
+    public $fileA9;
+    public $fileA10;
+    public $fileA11;
+    public $fileA12;
+    public $fileA13;
+
+    // Tambahkan rules untuk file validation
+    protected $rules = [
+        'fileA1' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA2' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA3' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA4' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA5' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA6' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA7' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA8' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA9' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA10' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA11' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA12' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'fileA13' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+    ];
 
     public function mount(): void
     {
@@ -35,7 +68,6 @@ class PointA extends Page implements HasForms
     private function getActivePeriodId()
     {
         try {
-            // Cari periode yang aktif (tidak closed dan masih dalam range tanggal)
             $activePeriod = Period::active()->first();
 
             Log::info('Active period found:', [
@@ -45,7 +77,6 @@ class PointA extends Page implements HasForms
                     'start_date' => $activePeriod->start_date,
                     'end_date' => $activePeriod->end_date,
                     'is_closed' => $activePeriod->is_closed,
-                    'status' => $activePeriod->status,
                 ] : 'No active period found'
             ]);
 
@@ -70,15 +101,13 @@ class PointA extends Page implements HasForms
             if (!$periodId) {
                 Log::warning('No active period found!');
 
-                // Tampilkan warning jika tidak ada periode aktif
                 Notification::make()
                     ->title('Perhatian!')
-                    ->body('Tidak ada periode penilaian aktif saat ini. Silakan hubungi administrator.')
+                    ->body('Tidak ada periode penilaian aktif saat ini.')
                     ->warning()
                     ->persistent()
                     ->send();
 
-                // Set default data tanpa period_id
                 $defaultData = [
                     'user_id' => $userId,
                     'period_id' => null,
@@ -98,6 +127,7 @@ class PointA extends Page implements HasForms
             if ($pointA) {
                 $data = $pointA->toArray();
                 Log::info('Found existing data for user ' . $userId . ' and period ' . $periodId);
+
                 $this->form->fill($data);
                 $this->data = $data;
                 $this->formDataForJS = $data;
@@ -127,15 +157,12 @@ class PointA extends Page implements HasForms
     {
         $periodId = $this->getActivePeriodId();
 
-        // Buat array schema
+        // Hanya hidden inputs, TANPA FileUpload
         $schema = [
-            Hidden::make('user_id')
-                ->default(auth()->id()),
+            Hidden::make('user_id')->default(auth()->id()),
+            Hidden::make('period_id')->default($periodId),
 
-            Hidden::make('period_id')
-                ->default($periodId),
-
-            // Semua field hanya sebagai hidden input untuk form submission
+            // Semua field A1-A13
             Hidden::make('A1'),
             Hidden::make('A2'),
             Hidden::make('A3'),
@@ -150,7 +177,7 @@ class PointA extends Page implements HasForms
             Hidden::make('A12'),
             Hidden::make('A13'),
 
-            // Skor utama A1-A13
+            // Semua field skor
             Hidden::make('scorA1'),
             Hidden::make('scorA2'),
             Hidden::make('scorA3'),
@@ -165,7 +192,6 @@ class PointA extends Page implements HasForms
             Hidden::make('scorA12'),
             Hidden::make('scorA13'),
 
-            // Scor Max A1-A13
             Hidden::make('scorMaxA1'),
             Hidden::make('scorMaxA2'),
             Hidden::make('scorMaxA3'),
@@ -180,7 +206,6 @@ class PointA extends Page implements HasForms
             Hidden::make('scorMaxA12'),
             Hidden::make('scorMaxA13'),
 
-            // Scor Sub Item A1-A13
             Hidden::make('scorSubItemA1'),
             Hidden::make('scorSubItemA2'),
             Hidden::make('scorSubItemA3'),
@@ -215,7 +240,7 @@ class PointA extends Page implements HasForms
             Hidden::make('SkorTambahanJumlahSkorA12'),
             Hidden::make('SkorTambahanJumlahBobotSubItemA12'),
 
-            // Hasil kalkulasi dari JavaScript
+            // Hasil akhir
             Hidden::make('TotalSkorPendidikanPointA'),
             Hidden::make('TotalKelebihanA11'),
             Hidden::make('TotalKelebihanA12'),
@@ -223,111 +248,27 @@ class PointA extends Page implements HasForms
             Hidden::make('nilaiPendidikandanPengajaran'),
             Hidden::make('NilaiTambahPendidikanDanPengajaran'),
             Hidden::make('NilaiTotalPendidikanDanPengajaran'),
-
-            // File uploads
-            Section::make('Upload Dokumen Pendukung')
-                ->schema([
-                    FileUpload::make('fileA1')
-                        ->label('1. Hasil evaluasi perkuliahan')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA2')
-                        ->label('2. Checklist RPS dari Prodi')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA3')
-                        ->label('3. Jumlah SKS (termasuk SKS Mengajar, Jabatan Struktural, dll)')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA4')
-                        ->label('4. SK Pembimbing dan Keterangan Prodi')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA5')
-                        ->label('5. SK Pembimbingan PKL/PPM/KKM')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA6')
-                        ->label('6. SK Pembimbingan Skripsi')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA7')
-                        ->label('7. SK penunjukkan sebagai penguji')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA8')
-                        ->label('8. SK Dosen Pembimbing Akademik (Dosen PA/Dosen Wali)')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA9')
-                        ->label('9. Keterangan dari Prodi dan BAAK')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA10')
-                        ->label('10. Keterangan dari Prodi')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA11')
-                        ->label('11. Bukti tertulis metode pembelajaran baru')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA12')
-                        ->label('12. Bukti fisik bahan pengajaran')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-
-                    FileUpload::make('fileA13')
-                        ->label('13. SK Pengangkatan sebagai Pejabat Struktural')
-                        ->directory('point-a/documents')
-                        ->acceptedFileTypes(['application/pdf', 'image/*'])
-                        ->maxSize(5120),
-                ])
-                ->columns(1)
-                ->collapsed(),
         ];
 
-        return $form
-            ->schema($schema)
-            ->statePath('data');
+        return $form->schema($schema)->statePath('data');
     }
 
     public function save(): void
     {
         try {
-            // JavaScript akan mengisi form data sebelum submit
+            // Validasi file upload
+            $this->validate();
+
+            // Ambil data dari form (TANPA file)
             $data = $this->form->getState();
 
-            Log::info('PointA Save - Form Data Received:', array_keys($data));
+            Log::info('PointA Save - Form Data Keys:', array_keys($data));
 
             // Pastikan user_id dan period_id ada
             if (!isset($data['user_id'])) {
                 $data['user_id'] = auth()->id();
             }
 
-            // Jika period_id tidak ada, ambil dari periode aktif
             if (!isset($data['period_id']) || !$data['period_id']) {
                 $periodId = $this->getActivePeriodId();
                 if ($periodId) {
@@ -335,27 +276,43 @@ class PointA extends Page implements HasForms
                 }
             }
 
-            // Validasi: pastikan period_id ada
+            // Validasi period_id
             if (!isset($data['period_id']) || !$data['period_id']) {
-                throw new \Exception('Tidak ada periode penilaian aktif. Silakan hubungi administrator.');
+                throw new \Exception('Tidak ada periode penilaian aktif.');
             }
 
-            // Validasi: pastikan periode masih aktif
             $period = Period::find($data['period_id']);
             if (!$period || !$period->isActive()) {
-                throw new \Exception('Periode penilaian sudah tidak aktif. Periode: ' .
-                    ($period ? $period->name . ' (' . $period->status . ')' : 'Tidak ditemukan'));
+                throw new \Exception('Periode penilaian sudah tidak aktif.');
             }
 
-            Log::info('PointA Save - After Adding IDs:', [
-                'user_id' => $data['user_id'],
-                'period_id' => $data['period_id'],
-                'period_name' => $period->name ?? 'N/A',
-                'period_status' => $period->status ?? 'N/A'
-            ]);
-
-            // Konversi semua nilai numerik
+            // Konversi nilai numerik
             $data = $this->convertNumericValues($data);
+
+            // Handle file uploads
+            $fileFields = [
+                'fileA1',
+                'fileA2',
+                'fileA3',
+                'fileA4',
+                'fileA5',
+                'fileA6',
+                'fileA7',
+                'fileA8',
+                'fileA9',
+                'fileA10',
+                'fileA11',
+                'fileA12',
+                'fileA13'
+            ];
+
+            foreach ($fileFields as $field) {
+                if ($this->{$field}) {
+                    // Simpan file ke storage
+                    $path = $this->{$field}->store("point-a/documents/" . auth()->id(), 'public');
+                    $data[$field] = $path;
+                }
+            }
 
             // Simpan data
             $pointA = PointAModel::updateOrCreate(
@@ -377,6 +334,9 @@ class PointA extends Page implements HasForms
                 ->success()
                 ->send();
 
+            // Reset file properties
+            $this->resetFileProperties();
+
             // Refresh data
             $this->loadData();
         } catch (\Exception $e) {
@@ -393,11 +353,26 @@ class PointA extends Page implements HasForms
         }
     }
 
-    // Helper method untuk konversi nilai
+    private function resetFileProperties(): void
+    {
+        $this->fileA1 = null;
+        $this->fileA2 = null;
+        $this->fileA3 = null;
+        $this->fileA4 = null;
+        $this->fileA5 = null;
+        $this->fileA6 = null;
+        $this->fileA7 = null;
+        $this->fileA8 = null;
+        $this->fileA9 = null;
+        $this->fileA10 = null;
+        $this->fileA11 = null;
+        $this->fileA12 = null;
+        $this->fileA13 = null;
+    }
+
     private function convertNumericValues(array $data): array
     {
         $numericFields = [
-            // A1-A13
             'A1',
             'A2',
             'A3',
@@ -412,7 +387,6 @@ class PointA extends Page implements HasForms
             'A12',
             'A13',
 
-            // Skor A1-A13
             'scorA1',
             'scorA2',
             'scorA3',
@@ -453,7 +427,6 @@ class PointA extends Page implements HasForms
             'scorSubItemA12',
             'scorSubItemA13',
 
-            // Tambahan A11
             'JumlahYangDihasilkanA11_5',
             'JumlahSkorYangDiHasilkanA11_5',
             'JumlahSkorYangDiHasilkanBobotSubItemA11_5',
@@ -461,7 +434,6 @@ class PointA extends Page implements HasForms
             'SkorTambahanJumlahA11_5',
             'SkorTambahanJumlahBobotSubItemA11_5',
 
-            // Tambahan A12
             'JumlahYangDihasilkanA12_3',
             'JumlahYangDihasilkanA12_4',
             'JumlahYangDihasilkanA12_5',
@@ -473,7 +445,6 @@ class PointA extends Page implements HasForms
             'SkorTambahanJumlahSkorA12',
             'SkorTambahanJumlahBobotSubItemA12',
 
-            // Hasil akhir
             'TotalSkorPendidikanPointA',
             'TotalKelebihanA11',
             'TotalKelebihanA12',
@@ -484,12 +455,34 @@ class PointA extends Page implements HasForms
         ];
 
         foreach ($numericFields as $field) {
-            if (isset($data[$field])) {
-                // Convert empty string to null, otherwise convert to float/int
+            if (!isset($data[$field]) || $data[$field] === null) {
+                if (
+                    str_starts_with($field, 'scor') ||
+                    str_starts_with($field, 'Total') ||
+                    str_starts_with($field, 'nilai') ||
+                    str_starts_with($field, 'Nilai') ||
+                    str_starts_with($field, 'JumlahSkor') ||
+                    str_starts_with($field, 'SkorTambahan')
+                ) {
+                    $data[$field] = 0;
+                } elseif (str_starts_with($field, 'JumlahYangDihasilkan')) {
+                    $data[$field] = 0;
+                }
+            } else {
                 if ($data[$field] === '') {
-                    $data[$field] = null;
+                    if (
+                        str_starts_with($field, 'scor') ||
+                        str_starts_with($field, 'Total') ||
+                        str_starts_with($field, 'nilai') ||
+                        str_starts_with($field, 'Nilai') ||
+                        str_starts_with($field, 'JumlahSkor') ||
+                        str_starts_with($field, 'SkorTambahan')
+                    ) {
+                        $data[$field] = 0;
+                    } else {
+                        $data[$field] = null;
+                    }
                 } elseif (is_numeric($data[$field])) {
-                    // Untuk field A1-A13 dan jumlah, gunakan integer
                     if (
                         in_array($field, ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12', 'A13']) ||
                         str_starts_with($field, 'JumlahYangDihasilkan')

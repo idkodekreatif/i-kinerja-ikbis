@@ -125,6 +125,20 @@
                         <input type="hidden" wire:model="data.A{{ $i }}" id="A{{ $i }}">
                     @endfor
 
+                    <input type="hidden" wire:model="data.fileA1" id="fileA1_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA2_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA3_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA4_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA5_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA6_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA7_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA8_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA9_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA10_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA11_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA12_hidden">
+                    <input type="hidden" wire:model="data.fileA1" id="fileA13_hidden">
+
                     <input type="hidden" wire:model="data.JumlahYangDihasilkanA11_5" id="JumlahYangDihasilkanA11_5">
                     <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_3" id="JumlahYangDihasilkanA12_3">
                     <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_4" id="JumlahYangDihasilkanA12_4">
@@ -176,15 +190,29 @@
                                     <td class="text-xs">Nilai rerata >= 4.60 - &lt; 4.80 (SANGAT BAIK)</td>
                                     <td class="text-xs">Nilai rerata >= 4.80 - 5.00 (ISTIMEWA)</td>
                                     <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Hasil evaluasi
-                                            perkuliahan</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA1"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA1')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                         <label class="form-label text-danger">* Upload Hasil evaluasi perkuliahan</label>
+                                         <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA1"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA1')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA1'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA1']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA1'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA1']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
                                     <td rowspan="2" class="bg-warning">
@@ -217,16 +245,30 @@
                                     <td class="text-xs">Menyusun untuk 25% - 50% dari mata kuliah yang diasuh</td>
                                     <td class="text-xs">Menyusun untuk 51% - 75% dari mata kuliah yang diasuh</td>
                                     <td class="text-xs">Menyusun untuk lebih dari 75% mata kuliah yang diasuh</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Checklist RPS dari
-                                            Prodi</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA2"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA2')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                      <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload Checklist RPS dari</label>
+                                         <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA2"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA2')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA2'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA2']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA2'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA2']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
                                     <td rowspan="2" class="bg-warning">
@@ -264,18 +306,34 @@
                                         dan Genap)</td>
                                     <td class="text-xs">Mengampu rata-rata 31 sks atau lebih, per Tahun Ajaran
                                         (semester Gasal dan Genap)</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Jumlah SKS (termasuk SKS
+                                         <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload Jumlah SKS (termasuk SKS
                                             Mengajar, Jabatan Struktural, dll)</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA3"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA3')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA3"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA3')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA3'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA3']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA3'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA3']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA3" id="scorA3" readonly>
                                     </td>
@@ -306,17 +364,33 @@
                                     <td class="text-xs">Membimbing 4 mata kuliah dengan tugas akhir seminar</td>
                                     <td class="text-xs">Membimbing >4 mata kuliah dengan tugas akhir seminar</td>
                                     <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload SK Pembimbing dan Keterangan
+                                         <label class="form-label text-danger">* Upload SK Pembimbing dan Keterangan
                                             Prodi</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA4"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA4')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA4"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA4')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA4'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA4']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA4'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA4']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA4" id="scorA4" readonly>
                                     </td>
@@ -352,17 +426,34 @@
                                         ATAU 11 - 15 mahasiswa)</td>
                                     <td class="text-xs">Membimbing mahasiswa PKL dan/ atau PPM/KKM (2 Kelompok ATAU
                                         16 - 20 mahasiswa, atau lebih)</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload SK Pembimbingan</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA5"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA5')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                         <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload SK Pembimbingan
+                                            Prodi</label>
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA5"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA5')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA5'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA5']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA5'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA5']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA5" id="scorA5" readonly>
                                     </td>
@@ -399,16 +490,32 @@
                                     <td class="text-xs">Membimbing skripsi sebagai pembimbing utama (>8 lulusan)
                                     </td>
                                     <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload SK Pembimbingan</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA6"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA6')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                         <label class="form-label text-danger">* Upload SK Pembimbingan</label>
+                                         <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA6"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA6')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA6'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA6']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA6'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA6']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA6" id="scorA6" readonly>
                                     </td>
@@ -440,17 +547,33 @@
                                     <td class="text-xs">Dosen menjadi Ketua Penguji (1 - 8 mahasiswa)</td>
                                     <td class="text-xs">Dosen menjadi Ketua Penguji (> 8 mahasiswa)</td>
                                     <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload SK penunjukkan sebagai
+                                         <label class="form-label text-danger">* Upload SK penunjukkan sebagai
                                             penguji</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA7"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA7')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA7"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA7')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA7'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA7']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA7'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA7']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA7" id="scorA7" readonly>
                                     </td>
@@ -482,17 +605,33 @@
                                     <td class="text-xs">Menjadi pembimbing akademik (25 - 30 mahasiswa)</td>
                                     <td class="text-xs">Menjadi pembimbing akademik (>30 mahasiswa)</td>
                                     <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload SK Dosen Pembimbing Akademik
+                                         <label class="form-label text-danger">* Upload SK Dosen Pembimbing Akademik
                                             (Dosen PA/Dosen Wali)</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA8"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA8')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA8"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA8')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA8'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA8']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA8'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA8']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA8" id="scorA8" readonly>
                                     </td>
@@ -526,18 +665,34 @@
                                     <td class="text-xs">Tidak diperhitungkan</td>
                                     <td class="text-xs">100% jumlah mahasiswa yang dibimbingnya lancar (Jumlah
                                         mahasiswa melanjutkan studi/lulus = 100%)</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Keterangan dari Prodi dan
+                                         <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload Keterangan dari Prodi dan
                                             BAAK</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA9"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA9')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA9"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA9')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA9'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA9']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA9'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA9']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA9" id="scorA9" readonly>
                                     </td>
@@ -571,17 +726,33 @@
                                         kemahasiswaan</td>
                                     <td class="text-xs">Menjadi penasihat akademik dan pembina kegiatan
                                         kemahasiswaan lebih dari 1</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Keterangan dari Prodi</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA10"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA10')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                         <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload Keterangan dari Prodi</label>
+                                         <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA10"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA10')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA10'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA10']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA10'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA10']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA10" id="scorA10" readonly>
                                     </td>
@@ -616,18 +787,34 @@
                                         diterapkan dalam PT / Fakultas / Prodinya</td>
                                     <td class="text-xs">Metode baru yang diusulkan telah disetujui dan
                                         diimplementasikan dalam PT / Fakultas / Prodinya</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Bukti tertulis terkait metode
+                                          <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload Bukti tertulis terkait metode
                                             pembelajaran baru yang telah disampaikan</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA11"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA11')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA11"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA11')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA11'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA11']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA11'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA11']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA11" id="scorA11" readonly>
                                     </td>
@@ -710,18 +897,34 @@
                                     <td class="text-xs">Menyusun buku ajar/buku number untuk suatu mata kuliah,
                                         mengikuti kaidah buku number serta diterbitkan secara resmi dan
                                         disebarluaskan</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload Bukti fisik bahan pengajaran
+                                        <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload Bukti fisik bahan pengajaran
                                             yang dihasilkan, dan jumlah mata kuliah diperhitungkan</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA12"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA12')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA12"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA12')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA12'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA12']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA12'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA12']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA12" id="scorA12" readonly>
                                     </td>
@@ -813,18 +1016,34 @@
                                     <td class="text-xs">Sedang menjabat sebagai Dekan, Ka. Lembaga, Ka. UPT</td>
                                     <td class="text-xs">Sedang menjabat sebagai Wakil Rektor</td>
                                     <td class="text-xs">Sedang menjabat sebagai Rektor</td>
-                                    <td rowspan="2">
-                                        <label class="form-label text-danger">* Upload SK Pengangkatan sebagai
+                                     <td rowspan="2">
+                                         <label class="form-label text-danger">* Upload SK Pengangkatan sebagai
                                             Pejabat Struktural</label>
-                                        <div class="file-upload-container">
-                                            <input type="file" wire:model="data.fileA13"
-                                                class="w-full text-xs border-gray-300 rounded-md"
-                                                accept=".pdf,.jpg,.jpeg,.png">
-                                            @error('data.fileA13')
-                                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                                            @enderror
+                                            <div class="file-upload-container">
+                                        <input type="file" wire:model="fileA13"
+                                            class="w-full text-xs border-gray-300 rounded-md"
+                                            accept=".pdf,.jpg,.jpeg,.png">
+                                        @error('fileA13')
+                                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                                        @enderror
+                                        @if($this->data['fileA13'] ?? false)
+                                            <div class="mt-1 text-xs text-green-600">
+                                                File sudah diupload: {{ basename($this->data['fileA13']) }}
+                                            </div>
+                                        @endif
+
+                                  @if($this->data['fileA13'] ?? false)
+                                            <div class="mt-1">
+                                                <a href="{{ Storage::url($this->data['fileA13']) }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 text-xs">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat File
+                                                </a>
+                                            </div>
+                                            @endif
                                         </div>
                                     </td>
+
                                     <td rowspan="2" class="bg-warning">
                                         <input type="number" name="scorA13" id="scorA13" readonly>
                                     </td>
