@@ -91,6 +91,7 @@
     @endpush
 
     <div class="space-y-6">
+              @if($hasActivePeriod)
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex justify-between items-center">
@@ -139,10 +140,10 @@
                     <input type="hidden" wire:model="data.fileA1" id="fileA12_hidden">
                     <input type="hidden" wire:model="data.fileA1" id="fileA13_hidden">
 
-                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA11_5" id="JumlahYangDihasilkanA11_5">
-                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_3" id="JumlahYangDihasilkanA12_3">
-                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_4" id="JumlahYangDihasilkanA12_4">
-                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_5" id="JumlahYangDihasilkanA12_5">
+                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA11_5" id="hidden_JumlahYangDihasilkanA11_5">
+                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_3" id="hidden_JumlahYangDihasilkanA12_3">
+                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_4" id="hidden_JumlahYangDihasilkanA12_4">
+                    <input type="hidden" wire:model="data.JumlahYangDihasilkanA12_5" id="hidden_JumlahYangDihasilkanA12_5">
 
                     <input type="hidden" wire:model="data.TotalSkorPendidikanPointA" id="Hidden_TotalSkorPendidikanPointA">
                     <input type="hidden" wire:model="data.TotalKelebihanA11" id="Hidden_TotalKelebihanA11">
@@ -1135,84 +1136,291 @@
                 </form>
             </div>
         </div>
+           @else
+           <!-- Tampilkan pesan error full page jika tidak ada periode aktif -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow">
+                <div class="p-8 text-center">
+                    <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-calendar-times text-red-600 text-2xl"></i>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        Periode Penilaian Tidak Aktif
+                    </h3>
+
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+                        Saat ini tidak ada periode penilaian yang aktif.
+                        Silakan hubungi administrator untuk informasi lebih lanjut.
+                    </p>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 max-w-md mx-auto">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    Anda tidak dapat mengisi form penilaian saat ini karena tidak ada periode aktif.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ url()->previous() }}"
+                       class="inline-flex items-center px-4 py-2 bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </a>
+                </div>
+            </div>
+        @endif
     </div>
 
    @livewireScripts
     @push('scripts')
+    <!-- Scripts hanya di-load jika ada periode aktif -->
+        @if($hasActivePeriod)
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="{{ asset('js/penilaian/itikad/point-a-calculations.js') }}"></script>
 
-        <script>
-            // Ambil data awal dari PHP
-            const initialData = @json($this->formDataForJS);
+       <script>
+    // Ambil data awal dari PHP
+    const initialData = @json($this->formDataForJS);
 
-            function fillForm() {
-                if (!initialData || Object.keys(initialData).length === 0) return;
+    console.log('Initial data loaded:', initialData);
 
-                // Isi Radio Buttons
-                for (let i = 1; i <= 13; i++) {
-                    const val = initialData[`A${i}`];
-                    if (val) {
-                        const radio = document.querySelector(`input[name="A${i}"][value="${val}"]`);
-                        if (radio) radio.checked = true;
-                    }
-                }
+    function fillForm() {
+        if (!initialData || Object.keys(initialData).length === 0) return;
 
-                // Isi Input Numbers
-                const numberFields = ['JumlahYangDihasilkanA11_5', 'JumlahYangDihasilkanA12_3', 'JumlahYangDihasilkanA12_4', 'JumlahYangDihasilkanA12_5'];
-                numberFields.forEach(f => {
-                    const el = document.getElementById(f);
-                    if (el && initialData[f]) el.value = initialData[f];
-                });
+        console.log('Filling form with data...');
 
-                setTimeout(sum, 500);
-            }
-
-            async function handleSubmit() {
-                // 1. Hitung ulang
-                if (typeof sum === 'function') sum();
-
-                // 2. Validasi radio
-                for (let i = 1; i <= 13; i++) {
-                    if (!document.querySelector(`input[name="A${i}"]:checked`)) {
-                        Swal.fire('Gagal', `Harap pilih skor untuk item A.${i}`, 'error');
-                        return;
-                    }
-                }
-
-                // 3. Sinkronisasi Data Tabel ke Livewire State
-                const dataToSync = {};
-
-                // Ambil semua input di tabel yang memiliki ID
-                document.querySelectorAll('.point-a-table input').forEach(input => {
-                    if (input.type === 'radio') {
-                        if (input.checked) dataToSync[input.name] = input.value;
-                    } else if (input.id) {
-                        dataToSync[input.id] = input.value || 0;
-                    }
-                });
-
-                // Masukkan ke array data di Livewire
-                @this.set('data', {
-                    ...Object.fromEntries(Object.entries(@this.get('data'))),
-                    ...dataToSync
-                }, true);
-
-                // 4. Konfirmasi & Save
-                const res = await Swal.fire({
-                    title: 'Simpan perubahan?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Simpan'
-                });
-
-                if (res.isConfirmed) {
-                    @this.save();
+        // 1. Isi Radio Buttons A1-A13
+        for (let i = 1; i <= 13; i++) {
+            const val = initialData[`A${i}`];
+            if (val !== undefined && val !== null) {
+                const radio = document.querySelector(`input[name="A${i}"][value="${val}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    console.log(`Set radio A${i} to ${val}`);
                 }
             }
+        }
 
-            document.addEventListener('DOMContentLoaded', fillForm);
-        </script>
+        // 2. Isi SEMUA input number yang ada di tabel
+        // List semua field yang ada di tabel
+        const allNumberFields = [
+            // Skor utama
+            'scorA1', 'scorA2', 'scorA3', 'scorA4', 'scorA5', 'scorA6', 'scorA7', 'scorA8',
+            'scorA9', 'scorA10', 'scorA11', 'scorA12', 'scorA13',
+            'scorMaxA1', 'scorMaxA2', 'scorMaxA3', 'scorMaxA4', 'scorMaxA5', 'scorMaxA6',
+            'scorMaxA7', 'scorMaxA8', 'scorMaxA9', 'scorMaxA10', 'scorMaxA11', 'scorMaxA12', 'scorMaxA13',
+            'scorSubItemA1', 'scorSubItemA2', 'scorSubItemA3', 'scorSubItemA4', 'scorSubItemA5',
+            'scorSubItemA6', 'scorSubItemA7', 'scorSubItemA8', 'scorSubItemA9', 'scorSubItemA10',
+            'scorSubItemA11', 'scorSubItemA12', 'scorSubItemA13',
+
+            // Tambahan A11
+            'JumlahYangDihasilkanA11_5',
+            'JumlahSkorYangDiHasilkanA11_5',
+            'JumlahSkorYangDiHasilkanBobotSubItemA11_5',
+            'SkorTambahanA11_5',
+            'SkorTambahanJumlahA11_5',
+            'SkorTambahanJumlahBobotSubItemA11_5',
+
+            // Tambahan A12
+            'JumlahYangDihasilkanA12_3',
+            'JumlahYangDihasilkanA12_4',
+            'JumlahYangDihasilkanA12_5',
+            'SkorTambahanA12_3',
+            'SkorTambahanA12_4',
+            'SkorTambahanA12_5',
+            'SkorTambahanJumlahA12',
+            'JumlahSkorYangDiHasilkanA12',
+            'SkorTambahanJumlahSkorA12',
+            'SkorTambahanJumlahBobotSubItemA12',
+
+            // Hasil akhir
+            'TotalSkorPendidikanPointA',
+            'TotalKelebihanA11',
+            'TotalKelebihanA12',
+            'TotalKelebihanSkor',
+            'nilaiPendidikandanPengajaran',
+            'NilaiTambahPendidikanDanPengajaran',
+            'NilaiTotalPendidikanDanPengajaran'
+        ];
+
+        // Isi semua field
+        allNumberFields.forEach(field => {
+            const el = document.getElementById(field);
+            if (el && initialData[field] !== undefined && initialData[field] !== null) {
+                // Format nilai: jika 0, tetap tampilkan 0, bukan kosong
+                el.value = initialData[field];
+                console.log(`Set ${field} to ${initialData[field]}`);
+            }
+        });
+
+        // 3. Isi hidden inputs untuk Livewire
+        syncDataToLivewire();
+
+        // 4. Trigger calculation setelah semua data diisi
+        setTimeout(() => {
+            if (typeof sum === 'function') {
+                console.log('Triggering calculation...');
+                sum();
+            }
+        }, 500);
+    }
+
+    // Fungsi untuk sync data dari display ke Livewire state
+    function syncDataToLivewire() {
+        console.log('Syncing data to Livewire...');
+
+        const dataToSync = {};
+
+        // 1. Ambil semua radio buttons yang checked
+        for (let i = 1; i <= 13; i++) {
+            const radio = document.querySelector(`input[name="A${i}"]:checked`);
+            if (radio) {
+                dataToSync[`A${i}`] = radio.value;
+            }
+        }
+
+        // 2. Ambil semua input number di tabel
+        const allInputs = document.querySelectorAll('.point-a-table input[type="number"]');
+        allInputs.forEach(input => {
+            if (input.id && input.id !== '') {
+                // Jika input kosong, set ke 0 (untuk field skor)
+                if (input.value === '' || input.value === null) {
+                    if (input.id.startsWith('scor') ||
+                        input.id.startsWith('Total') ||
+                        input.id.startsWith('nilai') ||
+                        input.id.startsWith('Nilai') ||
+                        input.id.startsWith('JumlahSkor') ||
+                        input.id.startsWith('SkorTambahan')) {
+                        dataToSync[input.id] = 0;
+                        input.value = 0; // Update display juga
+                    }
+                } else {
+                    dataToSync[input.id] = input.value;
+                }
+            }
+        });
+
+        // 3. Update Livewire state
+        if (Object.keys(dataToSync).length > 0) {
+            @this.set('data', {
+                ...Object.fromEntries(Object.entries(@this.get('data'))),
+                ...dataToSync
+            }, true);
+        }
+
+        console.log('Data synced to Livewire:', dataToSync);
+    }
+
+    // Override fungsi sum() untuk update Livewire state
+    const originalSum = window.sum;
+    window.sum = function() {
+        // Panggil fungsi asli
+        if (typeof originalSum === 'function') {
+            originalSum();
+        }
+
+        // Sync ke Livewire setelah perhitungan
+        setTimeout(syncDataToLivewire, 100);
+    };
+
+    // Event listener untuk semua input
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, filling form...');
+
+        // Isi form dengan data awal
+        fillForm();
+
+        // Setup event listeners untuk semua input
+        document.querySelectorAll('.point-a-table input').forEach(input => {
+            if (input.type === 'radio') {
+                input.addEventListener('change', function() {
+                    setTimeout(() => {
+                        if (typeof sum === 'function') sum();
+                        syncDataToLivewire();
+                    }, 100);
+                });
+            }
+
+            if (input.type === 'number') {
+                input.addEventListener('input', function() {
+                    setTimeout(() => {
+                        if (typeof sum === 'function') sum();
+                        syncDataToLivewire();
+                    }, 100);
+                });
+
+                input.addEventListener('change', function() {
+                    setTimeout(() => {
+                        if (typeof sum === 'function') sum();
+                        syncDataToLivewire();
+                    }, 100);
+                });
+            }
+        });
+
+        // Setup khusus untuk JumlahYangDihasilkan fields
+        const jumlahFields = [
+            'JumlahYangDihasilkanA11_5',
+            'JumlahYangDihasilkanA12_3',
+            'JumlahYangDihasilkanA12_4',
+            'JumlahYangDihasilkanA12_5'
+        ];
+
+        jumlahFields.forEach(field => {
+            const el = document.getElementById(field);
+            if (el) {
+                el.addEventListener('input', function() {
+                    setTimeout(() => {
+                        if (typeof sum === 'function') sum();
+                        syncDataToLivewire();
+                    }, 100);
+                });
+            }
+        });
+    });
+
+    async function handleSubmit() {
+        // 1. Pastikan sync data terbaru
+        syncDataToLivewire();
+
+        // 2. Validasi radio buttons
+        let isValid = true;
+        for (let i = 1; i <= 13; i++) {
+            if (!document.querySelector(`input[name="A${i}"]:checked`)) {
+                isValid = false;
+                await Swal.fire({
+                    title: 'Perhatian',
+                    text: `Harap pilih skor untuk item A.${i}`,
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                break;
+            }
+        }
+
+        if (!isValid) return;
+
+        // 3. Konfirmasi
+        const result = await Swal.fire({
+            title: 'Simpan Data?',
+            text: "Data akan disimpan ke database.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Simpan',
+            cancelButtonText: 'Batal'
+        });
+
+        if (result.isConfirmed) {
+            // 4. Trigger save di Livewire
+            @this.save();
+        }
+    }
+</script>
+ @endif
     @endpush
 </x-filament-panels::page>

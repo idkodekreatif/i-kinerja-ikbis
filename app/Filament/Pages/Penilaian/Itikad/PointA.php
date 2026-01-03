@@ -5,7 +5,6 @@ namespace App\Filament\Pages\Penilaian\Itikad;
 use App\Models\Penilaian\Itikad\PointA as PointAModel;
 use App\Models\Setting\Period;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use Filament\Forms\Contracts\HasForms;
@@ -17,7 +16,7 @@ use Livewire\WithFileUploads;
 class PointA extends Page implements HasForms
 {
     use InteractsWithForms;
-    use WithFileUploads; // TAMBAHKAN INI untuk Livewire file upload
+    use WithFileUploads;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Penilaian Dosen';
@@ -28,22 +27,13 @@ class PointA extends Page implements HasForms
     public ?array $data = [];
     public array $formDataForJS = [];
 
-    // Tambahkan property untuk file upload
-    public $fileA1;
-    public $fileA2;
-    public $fileA3;
-    public $fileA4;
-    public $fileA5;
-    public $fileA6;
-    public $fileA7;
-    public $fileA8;
-    public $fileA9;
-    public $fileA10;
-    public $fileA11;
-    public $fileA12;
-    public $fileA13;
+    // Tambahkan property untuk kontrol tampilan
+    public $hasActivePeriod = false;
+    public $activePeriod = null;
 
-    // Tambahkan rules untuk file validation
+    public $fileA1, $fileA2, $fileA3, $fileA4, $fileA5, $fileA6, $fileA7,
+        $fileA8, $fileA9, $fileA10, $fileA11, $fileA12, $fileA13;
+
     protected $rules = [
         'fileA1' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         'fileA2' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -62,24 +52,46 @@ class PointA extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->loadData();
+        // Cek apakah ada periode aktif
+        $this->checkActivePeriod();
+
+        // Hanya load data jika ada periode aktif
+        if ($this->hasActivePeriod) {
+            $this->loadData();
+        }
+    }
+
+    private function checkActivePeriod(): void
+    {
+        try {
+            $this->activePeriod = Period::active()->first();
+            $this->hasActivePeriod = !is_null($this->activePeriod);
+
+            // Jika tidak ada periode aktif, set flash message
+            if (!$this->hasActivePeriod) {
+                Notification::make()
+                    ->title('Periode Tidak Aktif!')
+                    ->body('Tidak ada periode penilaian yang aktif saat ini. Form tidak dapat diakses.')
+                    ->danger()
+                    ->persistent()
+                    ->send();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error checking active period:', ['error' => $e->getMessage()]);
+            $this->hasActivePeriod = false;
+
+            Notification::make()
+                ->title('Error!')
+                ->body('Terjadi kesalahan saat memeriksa periode aktif.')
+                ->danger()
+                ->send();
+        }
     }
 
     private function getActivePeriodId()
     {
         try {
             $activePeriod = Period::active()->first();
-
-            Log::info('Active period found:', [
-                'period' => $activePeriod ? [
-                    'id' => $activePeriod->id,
-                    'name' => $activePeriod->name,
-                    'start_date' => $activePeriod->start_date,
-                    'end_date' => $activePeriod->end_date,
-                    'is_closed' => $activePeriod->is_closed,
-                ] : 'No active period found'
-            ]);
-
             return $activePeriod ? $activePeriod->id : null;
         } catch (\Exception $e) {
             Log::error('Error getting active period:', ['error' => $e->getMessage()]);
@@ -91,16 +103,9 @@ class PointA extends Page implements HasForms
     {
         try {
             $userId = auth()->id();
-            $periodId = $this->getActivePeriodId();
-
-            Log::info('Loading PointA data for:', [
-                'user_id' => $userId,
-                'period_id' => $periodId
-            ]);
+            $periodId = $this->activePeriod->id;
 
             if (!$periodId) {
-                Log::warning('No active period found!');
-
                 Notification::make()
                     ->title('Perhatian!')
                     ->body('Tidak ada periode penilaian aktif saat ini.')
@@ -108,15 +113,9 @@ class PointA extends Page implements HasForms
                     ->persistent()
                     ->send();
 
-                $defaultData = [
-                    'user_id' => $userId,
-                    'period_id' => null,
-                ];
-
-                $this->form->fill($defaultData);
-                $this->data = $defaultData;
-                $this->formDataForJS = $defaultData;
-
+                $this->form->fill(['user_id' => $userId]);
+                $this->data = ['user_id' => $userId];
+                $this->formDataForJS = ['user_id' => $userId];
                 return;
             }
 
@@ -126,13 +125,117 @@ class PointA extends Page implements HasForms
 
             if ($pointA) {
                 $data = $pointA->toArray();
-                Log::info('Found existing data for user ' . $userId . ' and period ' . $periodId);
+
+                // Pastikan semua field skor ada, meskipun null
+                $requiredFields = [
+                    // A1-A13
+                    'A1',
+                    'A2',
+                    'A3',
+                    'A4',
+                    'A5',
+                    'A6',
+                    'A7',
+                    'A8',
+                    'A9',
+                    'A10',
+                    'A11',
+                    'A12',
+                    'A13',
+
+                    // Skor utama
+                    'scorA1',
+                    'scorA2',
+                    'scorA3',
+                    'scorA4',
+                    'scorA5',
+                    'scorA6',
+                    'scorA7',
+                    'scorA8',
+                    'scorA9',
+                    'scorA10',
+                    'scorA11',
+                    'scorA12',
+                    'scorA13',
+                    'scorMaxA1',
+                    'scorMaxA2',
+                    'scorMaxA3',
+                    'scorMaxA4',
+                    'scorMaxA5',
+                    'scorMaxA6',
+                    'scorMaxA7',
+                    'scorMaxA8',
+                    'scorMaxA9',
+                    'scorMaxA10',
+                    'scorMaxA11',
+                    'scorMaxA12',
+                    'scorMaxA13',
+                    'scorSubItemA1',
+                    'scorSubItemA2',
+                    'scorSubItemA3',
+                    'scorSubItemA4',
+                    'scorSubItemA5',
+                    'scorSubItemA6',
+                    'scorSubItemA7',
+                    'scorSubItemA8',
+                    'scorSubItemA9',
+                    'scorSubItemA10',
+                    'scorSubItemA11',
+                    'scorSubItemA12',
+                    'scorSubItemA13',
+
+                    // Tambahan A11
+                    'JumlahYangDihasilkanA11_5',
+                    'JumlahSkorYangDiHasilkanA11_5',
+                    'JumlahSkorYangDiHasilkanBobotSubItemA11_5',
+                    'SkorTambahanA11_5',
+                    'SkorTambahanJumlahA11_5',
+                    'SkorTambahanJumlahBobotSubItemA11_5',
+
+                    // Tambahan A12
+                    'JumlahYangDihasilkanA12_3',
+                    'JumlahYangDihasilkanA12_4',
+                    'JumlahYangDihasilkanA12_5',
+                    'SkorTambahanA12_3',
+                    'SkorTambahanA12_4',
+                    'SkorTambahanA12_5',
+                    'SkorTambahanJumlahA12',
+                    'JumlahSkorYangDiHasilkanA12',
+                    'SkorTambahanJumlahSkorA12',
+                    'SkorTambahanJumlahBobotSubItemA12',
+
+                    // Hasil akhir
+                    'TotalSkorPendidikanPointA',
+                    'TotalKelebihanA11',
+                    'TotalKelebihanA12',
+                    'TotalKelebihanSkor',
+                    'nilaiPendidikandanPengajaran',
+                    'NilaiTambahPendidikanDanPengajaran',
+                    'NilaiTotalPendidikanDanPengajaran'
+                ];
+
+                // Set default 0 untuk field skor yang null
+                foreach ($requiredFields as $field) {
+                    if (!isset($data[$field]) || $data[$field] === null) {
+                        if (
+                            str_starts_with($field, 'scor') ||
+                            str_starts_with($field, 'Total') ||
+                            str_starts_with($field, 'nilai') ||
+                            str_starts_with($field, 'Nilai') ||
+                            str_starts_with($field, 'JumlahSkor') ||
+                            str_starts_with($field, 'SkorTambahan')
+                        ) {
+                            $data[$field] = 0;
+                        }
+                    }
+                }
+
+                Log::info('Loaded data with defaults:', $data);
 
                 $this->form->fill($data);
                 $this->data = $data;
                 $this->formDataForJS = $data;
             } else {
-                Log::info('No existing data found, setting defaults');
                 $defaultData = [
                     'user_id' => $userId,
                     'period_id' => $periodId,
@@ -144,10 +247,9 @@ class PointA extends Page implements HasForms
             }
         } catch (\Exception $e) {
             Log::error('Error loading PointA data:', ['error' => $e->getMessage()]);
-
             Notification::make()
                 ->title('Error!')
-                ->body('Terjadi kesalahan saat memuat data: ' . $e->getMessage())
+                ->body('Terjadi kesalahan saat memuat data.')
                 ->danger()
                 ->send();
         }
@@ -155,14 +257,16 @@ class PointA extends Page implements HasForms
 
     public function form(Form $form): Form
     {
-        $periodId = $this->getActivePeriodId();
+        // HANYA buat form schema jika ada periode aktif
+        if (!$this->hasActivePeriod) {
+            return $form;
+        }
 
-        // Hanya hidden inputs, TANPA FileUpload
         $schema = [
             Hidden::make('user_id')->default(auth()->id()),
-            Hidden::make('period_id')->default($periodId),
+            Hidden::make('period_id')->default($this->getActivePeriodId()),
 
-            // Semua field A1-A13
+            // A1-A13
             Hidden::make('A1'),
             Hidden::make('A2'),
             Hidden::make('A3'),
@@ -177,7 +281,7 @@ class PointA extends Page implements HasForms
             Hidden::make('A12'),
             Hidden::make('A13'),
 
-            // Semua field skor
+            // Semua skor
             Hidden::make('scorA1'),
             Hidden::make('scorA2'),
             Hidden::make('scorA3'),
@@ -248,6 +352,21 @@ class PointA extends Page implements HasForms
             Hidden::make('nilaiPendidikandanPengajaran'),
             Hidden::make('NilaiTambahPendidikanDanPengajaran'),
             Hidden::make('NilaiTotalPendidikanDanPengajaran'),
+
+            // File paths (hidden)
+            Hidden::make('fileA1'),
+            Hidden::make('fileA2'),
+            Hidden::make('fileA3'),
+            Hidden::make('fileA4'),
+            Hidden::make('fileA5'),
+            Hidden::make('fileA6'),
+            Hidden::make('fileA7'),
+            Hidden::make('fileA8'),
+            Hidden::make('fileA9'),
+            Hidden::make('fileA10'),
+            Hidden::make('fileA11'),
+            Hidden::make('fileA12'),
+            Hidden::make('fileA13'),
         ];
 
         return $form->schema($schema)->statePath('data');
@@ -255,39 +374,31 @@ class PointA extends Page implements HasForms
 
     public function save(): void
     {
+        // HANYA bisa save jika ada periode aktif
+        if (!$this->hasActivePeriod) {
+            Notification::make()
+                ->title('Akses Ditolak!')
+                ->body('Tidak dapat menyimpan data karena tidak ada periode aktif.')
+                ->danger()
+                ->send();
+            return;
+        }
+
         try {
-            // Validasi file upload
+            // Validasi file
             $this->validate();
 
-            // Ambil data dari form (TANPA file)
             $data = $this->form->getState();
 
-            Log::info('PointA Save - Form Data Keys:', array_keys($data));
-
-            // Pastikan user_id dan period_id ada
+            // Pastikan user_id dan period_id
             if (!isset($data['user_id'])) {
                 $data['user_id'] = auth()->id();
             }
 
-            if (!isset($data['period_id']) || !$data['period_id']) {
-                $periodId = $this->getActivePeriodId();
-                if ($periodId) {
-                    $data['period_id'] = $periodId;
-                }
+            $periodId = $this->getActivePeriodId();
+            if (!$data['period_id'] && $periodId) {
+                $data['period_id'] = $periodId;
             }
-
-            // Validasi period_id
-            if (!isset($data['period_id']) || !$data['period_id']) {
-                throw new \Exception('Tidak ada periode penilaian aktif.');
-            }
-
-            $period = Period::find($data['period_id']);
-            if (!$period || !$period->isActive()) {
-                throw new \Exception('Periode penilaian sudah tidak aktif.');
-            }
-
-            // Konversi nilai numerik
-            $data = $this->convertNumericValues($data);
 
             // Handle file uploads
             $fileFields = [
@@ -308,45 +419,33 @@ class PointA extends Page implements HasForms
 
             foreach ($fileFields as $field) {
                 if ($this->{$field}) {
-                    // Simpan file ke storage
                     $path = $this->{$field}->store("point-a/documents/" . auth()->id(), 'public');
                     $data[$field] = $path;
                 }
             }
 
-            // Simpan data
+            // Konversi nilai
+            $data = $this->convertNumericValues($data);
+
+            // Simpan
             $pointA = PointAModel::updateOrCreate(
-                [
-                    'user_id' => $data['user_id'],
-                    'period_id' => $data['period_id']
-                ],
+                ['user_id' => $data['user_id'], 'period_id' => $data['period_id']],
                 $data
             );
 
-            Log::info('PointA Save - Success:', [
-                'id' => $pointA->id,
-                'user_id' => $pointA->user_id,
-                'period_id' => $pointA->period_id
-            ]);
-
             Notification::make()
-                ->title('Data berhasil disimpan!')
+                ->title('Berhasil!')
+                ->body('Data berhasil disimpan.')
                 ->success()
                 ->send();
 
             // Reset file properties
             $this->resetFileProperties();
-
-            // Refresh data
             $this->loadData();
         } catch (\Exception $e) {
-            Log::error('PointA Save Error:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            Log::error('Save error:', ['error' => $e->getMessage()]);
             Notification::make()
-                ->title('Terjadi kesalahan!')
+                ->title('Error!')
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
@@ -355,19 +454,9 @@ class PointA extends Page implements HasForms
 
     private function resetFileProperties(): void
     {
-        $this->fileA1 = null;
-        $this->fileA2 = null;
-        $this->fileA3 = null;
-        $this->fileA4 = null;
-        $this->fileA5 = null;
-        $this->fileA6 = null;
-        $this->fileA7 = null;
-        $this->fileA8 = null;
-        $this->fileA9 = null;
-        $this->fileA10 = null;
-        $this->fileA11 = null;
-        $this->fileA12 = null;
-        $this->fileA13 = null;
+        $this->fileA1 = $this->fileA2 = $this->fileA3 = $this->fileA4 = $this->fileA5 =
+            $this->fileA6 = $this->fileA7 = $this->fileA8 = $this->fileA9 = $this->fileA10 =
+            $this->fileA11 = $this->fileA12 = $this->fileA13 = null;
     }
 
     private function convertNumericValues(array $data): array
@@ -455,20 +544,7 @@ class PointA extends Page implements HasForms
         ];
 
         foreach ($numericFields as $field) {
-            if (!isset($data[$field]) || $data[$field] === null) {
-                if (
-                    str_starts_with($field, 'scor') ||
-                    str_starts_with($field, 'Total') ||
-                    str_starts_with($field, 'nilai') ||
-                    str_starts_with($field, 'Nilai') ||
-                    str_starts_with($field, 'JumlahSkor') ||
-                    str_starts_with($field, 'SkorTambahan')
-                ) {
-                    $data[$field] = 0;
-                } elseif (str_starts_with($field, 'JumlahYangDihasilkan')) {
-                    $data[$field] = 0;
-                }
-            } else {
+            if (isset($data[$field])) {
                 if ($data[$field] === '') {
                     if (
                         str_starts_with($field, 'scor') ||
@@ -479,8 +555,6 @@ class PointA extends Page implements HasForms
                         str_starts_with($field, 'SkorTambahan')
                     ) {
                         $data[$field] = 0;
-                    } else {
-                        $data[$field] = null;
                     }
                 } elseif (is_numeric($data[$field])) {
                     if (
