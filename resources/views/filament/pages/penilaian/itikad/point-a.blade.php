@@ -647,7 +647,7 @@
                                             class="w-full text-center">
                                     </td>
                                     <td></td>
-                                    <td>
+                                    <td class="bg-warning">
                                         <input type="number" name="JumlahSkorYangDiHasilkanA11_5"
                                             id="JumlahSkorYangDiHasilkanA11_5" readonly>
                                     </td>
@@ -671,7 +671,7 @@
                                         <input type="number" name="SkorTambahanJumlahA11_5"
                                             id="SkorTambahanJumlahA11_5" readonly>
                                     </td>
-                                    <td></td>
+                                    <td class="bg-warning"></td>
                                     <td></td>
                                     <td>
                                         <input type="number" name="SkorTambahanJumlahBobotSubItemA11_5"
@@ -748,7 +748,7 @@
                                             class="w-full text-center">
                                     </td>
                                     <td></td>
-                                    <td>
+                                    <td class="bg-warning">
                                         <input type="number" name="JumlahSkorYangDiHasilkanA12"
                                             id="JumlahSkorYangDiHasilkanA12" readonly>
                                     </td>
@@ -778,7 +778,7 @@
                                         <input type="number" name="SkorTambahanJumlahA12" id="SkorTambahanJumlahA12"
                                             readonly>
                                     </td>
-                                    <td></td>
+                                    <td class="bg-warning"></td>
                                     <td></td>
                                     <td>
                                         <input type="number" name="SkorTambahanJumlahBobotSubItemA12"
