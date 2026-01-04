@@ -18,7 +18,7 @@ class PointC extends Page implements HasForms
     use InteractsWithForms;
     use WithFileUploads;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Penilaian Dosen';
     protected static string $view = 'filament.pages.penilaian.itikad.point-c';
     protected static ?string $title = 'Form Point C - Pengabdian Kepada Masyarakat';
