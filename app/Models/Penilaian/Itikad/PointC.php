@@ -13,7 +13,7 @@ class PointC extends Model
 
     protected $table = 'point_c';
 
-    protected $guarded = ['id'];
+    protected $guarded = [];
 
     protected $casts = [
         'TotalSkorPengabdian' => 'float',
