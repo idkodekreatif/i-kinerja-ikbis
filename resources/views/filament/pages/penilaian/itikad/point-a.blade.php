@@ -162,13 +162,13 @@
                                 <tr class="bg-gray-100 dark:bg-gray-700">
                                     <td rowspan="2">No</td>
                                     <td rowspan="2">Komponen Kompetensi</td>
-                                    <td colspan="5" class="textcenter">Skor</td>
+                                    <td colspan="5" class="text-center">Skor</td>
                                     <td rowspan="2">Bukti Pendukung</td>
                                     <td rowspan="2" class="bg-warning">Skor</td>
                                     <td rowspan="2">Skor/Skor maks</td>
                                     <td rowspan="2">Skor x Bobot Sub Item</td>
                                 </tr>
-                                <tr class="bg-gray-100 dark:bg-gray-700">
+                                <tr class="bg-gray-100 dark:bg-gray-700 text-center">
                                     <td>1</td>
                                     <td>2</td>
                                     <td>3</td>

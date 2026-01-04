@@ -13,7 +13,7 @@ class PointB extends Model
 
     protected $table = 'point_b';
 
-    protected $guarded = ['id'];
+    protected $guarded = [];
 
     protected $casts = [
         'TotalSkorPenelitianPointB' => 'float',
