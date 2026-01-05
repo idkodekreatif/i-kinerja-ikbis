@@ -13,7 +13,7 @@ class PointD extends Model
 
     protected $table = 'point_d';
 
-    protected $guarded = ['id'];
+    protected $guarded = [];
 
     protected $casts = [
         'TotalSkorUnsurPenunjang' => 'float',
