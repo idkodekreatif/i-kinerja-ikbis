@@ -318,7 +318,7 @@ class PredikatAssessmentSeeder extends Seeder
         ];
 
         foreach ($assessments as $assessment) {
-            DB::table('point_assessments')->insert([
+            DB::table('predikat_assessments')->insert([
                 'id' => $assessment[0],
                 'a_poin' => $assessment[1],
                 'b_poin' => $assessment[2],
@@ -330,6 +330,6 @@ class PredikatAssessmentSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Seeded 300 point assessments successfully.');
+        $this->command->info('Seeded 300 predikat assessments successfully.');
     }
 }

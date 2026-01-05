@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             JabatanStrukturalSeeder::class,
             PeriodsSeeder::class,
             KomponenPoinSeeder::class,
-            PointAssessmentSeeder::class,
+            PredikatAssessmentSeeder::class,
         ]);
 
         User::factory()->create([
