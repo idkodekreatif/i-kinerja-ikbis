@@ -188,4 +188,15 @@ class User extends Authenticatable
             ->whereNull('tmt_selesai')
             ->latest('tmt_mulai');
     }
+
+    public function jabfung()
+    {
+        return $this->belongsToMany(
+            \App\Models\Setting\Jabatan\JabatanFungsional::class,
+            'user_jabatan_fungsional',
+            'user_id',
+            'jabatan_fungsional_id'
+        )->withPivot(['tmt_mulai', 'tmt_selesai', 'status'])
+            ->withTimestamps();
+    }
 }
