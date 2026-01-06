@@ -19,9 +19,12 @@ use Illuminate\Support\Facades\Response;
 
 class RaportDosen extends Page
 {
+    protected static ?string $navigationGroup = 'Penilaian Dosen';
+    protected static ?string $title = 'Form Point A - Pendidikan dan Pengajaran';
+    protected static ?string $slug = 'penilaian-dosen/itikad/raport';
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static string $view = 'filament.pages.penilaian.raport-dosen';
-    protected static ?string $navigationGroup = 'Penilaian';
     protected static ?string $navigationLabel = 'Raport Dosen';
     protected static ?int $navigationSort = 2;
 
