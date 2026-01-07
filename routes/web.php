@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Filament\Pages\Penilaian\RaportDosen;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,3 +29,8 @@ Route::get('/impersonate/status', function () {
         'user_name' => auth()->user()->name ?? null,
     ]);
 })->middleware(['web', 'auth']);
+
+Route::get('/raport/pdf', function () {
+    $raportDosen = new RaportDosen();
+    return $raportDosen->downloadPdf();
+})->name('raport.pdf');
